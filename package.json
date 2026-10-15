@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "stripe:setup": "node scripts/stripe-setup.mjs"
+    "stripe:setup": "node scripts/stripe-setup.mjs",
+    "stripe:webhook": "node --env-file=.env.local scripts/stripe-webhook-setup.mjs"
   },
   "dependencies": {
     "firebase": "10.14.1",
