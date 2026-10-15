@@ -1,0 +1,685 @@
+<!doctype html><html lang="en-GB"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body><title>The Signal Loft Guidebook</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Atkinson+Hyperlegible:wght@400;700&family=JetBrains+Mono:wght@500&display=swap">
+<style>
+/* Layout: one-column phone guidebook. Header, sticky section tabs, a card per topic; host tools in their own panel at the end. */
+:root{
+  --bg:#f4f7f6; --surface:#ffffff; --ink:#10233a; --muted:#4b5d6e; --line:#d5dfe3;
+  --sea:#1d7568; --sea-soft:#e1f0ec; --sun:#f2b632; --sun-ink:#3a2a00; --warn:#b4471b; --wa:#1f8a4c;
+  --display:"Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --body:"Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --mono:"JetBrains Mono", ui-monospace, Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0c1722; --surface:#13212e; --ink:#e7eef2; --muted:#9db1c0; --line:#24384a;
+  --sea:#52c1ae; --sea-soft:#163a37; --sun:#f2c14e; --sun-ink:#2b2000; --warn:#f08a5d; --wa:#3cc47a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0c1722; --surface:#13212e; --ink:#e7eef2; --muted:#9db1c0; --line:#24384a;
+  --sea:#52c1ae; --sea-soft:#163a37; --sun:#f2c14e; --sun-ink:#2b2000; --warn:#f08a5d; --wa:#3cc47a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-text-size-adjust:100%}
+.wrap{max-width:600px;margin:0 auto;padding-left:max(16px, env(safe-area-inset-left,0px));padding-right:max(16px, env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.1;margin:0;text-wrap:balance}
+h3{font-size:1.12rem}
+p{margin:0}
+a{color:var(--sea)}
+:focus-visible{outline:3px solid var(--sun);outline-offset:2px;border-radius:6px}
+button,input,textarea,select{font:inherit;color:inherit}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45em;font-weight:700;font-size:.92rem;border:1px solid var(--ink);border-radius:999px;padding:9px 15px;background:transparent;color:var(--ink);cursor:pointer;text-decoration:none}
+.btn.solid{background:var(--ink);color:var(--bg)}
+.btn.wa{background:var(--wa);border-color:var(--wa);color:#fff}
+.btn.small{font-size:.82rem;padding:6px 12px}
+.btn:disabled{opacity:.5;cursor:default}
+.btnrow{display:flex;gap:8px;flex-wrap:wrap}
+input[type=text],input[type=url],textarea{width:100%;border:1px solid var(--line);background:var(--bg);border-radius:12px;padding:10px 12px}
+textarea{min-height:80px;resize:vertical}
+label.f,.f{display:grid;gap:6px;font-weight:700;font-size:.92rem;min-width:0;grid-template-columns:minmax(0,1fr)}
+
+.sample{background:var(--sun);color:var(--sun-ink);font-size:.82rem;text-align:center;padding:8px 16px}
+.sample a{color:inherit;font-weight:700}
+
+header.hero{background:var(--sea);color:#fff;padding-block:28px 26px}
+.hero small{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
+.hero h1{font-size:2.2rem;font-weight:800;margin-top:6px}
+.hero .addr{opacity:.9;margin-top:6px}
+.host{display:flex;gap:12px;align-items:center;margin-top:20px;background:rgba(255,255,255,.12);border-radius:16px;padding:12px 14px}
+.avatar{width:44px;height:44px;border-radius:50%;background:#f2b632;color:#3a2a00;display:grid;place-items:center;font-family:var(--display);font-weight:800;flex:none}
+.host p{font-size:.95rem}
+
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line)}
+.tabs .wrap{display:flex;gap:6px;overflow-x:auto;padding-block:10px;scrollbar-width:none}
+.tabs a{flex:none;text-decoration:none;color:var(--ink);font-weight:700;font-size:.9rem;padding:8px 14px;border-radius:999px;border:1px solid var(--line)}
+.tabs a.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.tabs a.hosttab{border-style:dashed}
+
+main{display:grid;gap:18px;padding-block:20px 48px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:20px;display:grid;gap:14px;scroll-margin-top:calc(70px + env(safe-area-inset-top,0px));min-width:0}
+.card h2{font-size:1.5rem}
+.k{font-family:var(--mono);font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--sea)}
+.facts{display:grid;border:1px solid var(--line);border-radius:14px;overflow:hidden}
+.fact{display:flex;justify-content:space-between;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+.fact:first-child{border-top:0}
+.fact span{color:var(--muted)}
+.fact b{text-align:right}
+ol.steps{margin:0;padding-left:1.3em;display:grid;gap:8px}
+ol.steps li::marker{font-family:var(--mono);color:var(--sea)}
+.note{background:var(--sea-soft);border-radius:14px;padding:12px 14px;font-size:.95rem}
+.note.warn{border-left:4px solid var(--warn)}
+.muted{color:var(--muted)}
+.small{font-size:.86rem}
+
+.cred{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.cred div{min-width:0}
+.cred small{display:block;color:var(--muted);font-size:.8rem}
+.cred code{font-family:var(--mono);font-size:1.05rem;word-break:break-all;user-select:all}
+
+details.acc{border:1px solid var(--line);border-radius:14px;padding:2px 14px}
+details.acc summary{cursor:pointer;font-weight:700;padding:12px 0;list-style:none;display:flex;justify-content:space-between;gap:10px}
+details.acc summary::-webkit-details-marker{display:none}
+details.acc summary::after{content:"+";font-family:var(--mono);color:var(--sea)}
+details.acc[open] summary::after{content:"–"}
+details.acc>p{color:var(--muted);padding-bottom:12px}
+
+/* photo guides */
+.guides{display:grid;gap:14px}
+.guide{border:1px solid var(--line);border-radius:16px;overflow:hidden;display:grid;grid-template-columns:minmax(0,1fr)}
+.guide-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;padding:14px 14px 10px}
+.guide-head .k{flex:none}
+.photo{position:relative;background:var(--bg);line-height:0}
+.photo img,.photo svg{display:block;width:100%;height:auto;max-width:100%;aspect-ratio:400/260;object-fit:cover}
+.photo.editing{cursor:crosshair;outline:3px dashed var(--sun);outline-offset:-3px}
+.pin{position:absolute;transform:translate(-50%,-50%);width:30px;height:30px;border-radius:50%;background:#f2b632;color:#3a2a00;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.4);display:grid;place-items:center;font-family:var(--mono);font-size:.8rem;font-weight:700;line-height:1}
+.pin::after{content:"";position:absolute;inset:-9px;border-radius:50%;border:2px solid #f2b632;opacity:.7}
+@media (prefers-reduced-motion:no-preference){.pin::after{animation:ping 2.2s ease-out infinite}@keyframes ping{0%{transform:scale(.7);opacity:.8}100%{transform:scale(1.5);opacity:0}}}
+.guide-body{padding:12px 14px 14px;display:grid;gap:10px;min-width:0;grid-template-columns:minmax(0,1fr)}
+.editor input,.editor textarea,.revform input,#coForm input,#coForm textarea{font-weight:400}
+.editor input[type=file]{max-width:100%}
+.pinlist{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+.pinlist li{display:flex;gap:10px;align-items:flex-start;font-size:.95rem}
+.pinlist .n{flex:none;width:24px;height:24px;border-radius:50%;background:var(--sun);color:var(--sun-ink);display:grid;place-items:center;font-family:var(--mono);font-size:.74rem;font-weight:700}
+.badge{font-family:var(--mono);font-size:.68rem;letter-spacing:.06em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--sea-soft);color:var(--sea)}
+.editor{display:grid;gap:10px;min-width:0;grid-template-columns:minmax(0,1fr);border-top:1px dashed var(--line);padding-top:12px}
+.pinedit{display:flex;gap:8px;align-items:center}
+.pinedit input{flex:1;min-width:0;font-size:.92rem}
+
+/* local picks */
+.picks{display:grid;gap:12px}
+.pick{border:1px solid var(--line);border-radius:16px;padding:14px;display:grid;gap:10px}
+.pick .meta{font-family:var(--mono);font-size:.74rem;color:var(--sea);display:flex;gap:10px;flex-wrap:wrap}
+.pick .desc{color:var(--muted);font-size:.95rem}
+.route{display:grid;gap:10px;padding:12px;border-radius:12px;background:var(--bg)}
+.route ol{margin:0;padding-left:1.3em;display:grid;gap:6px;font-size:.93rem}
+.stars{color:var(--sun);letter-spacing:2px;font-size:1.05rem}
+.stars .off{color:var(--line)}
+.rating{display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:.9rem}
+.revs{display:grid;gap:8px}
+.rev{border-left:3px solid var(--line);padding-left:10px;font-size:.92rem}
+.rev .who{color:var(--muted);font-size:.8rem}
+.revform{display:grid;gap:10px;padding:12px;border:1px dashed var(--line);border-radius:12px}
+.starpick{display:flex;gap:4px}
+.starpick button{background:none;border:0;font-size:1.7rem;line-height:1;color:var(--line);cursor:pointer;padding:2px}
+.starpick button.on{color:var(--sun)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{border:1px solid var(--line);background:var(--bg);border-radius:999px;padding:6px 12px;cursor:pointer;font-size:.88rem}
+.seg button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ex{font-family:var(--mono);font-size:.66rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 7px}
+
+/* check-out */
+.check{display:grid;gap:8px}
+.check label{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border:1px solid var(--line);border-radius:14px;cursor:pointer}
+.check input{width:22px;height:22px;margin:1px 0 0;accent-color:var(--sea);flex:none}
+.check input:checked + span{text-decoration:line-through;color:var(--muted)}
+.progress{font-family:var(--mono);font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.status{font-size:.92rem;padding:10px 12px;border-radius:12px;background:var(--sea-soft)}
+
+.sos{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sos div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;min-width:0}
+.sos small{display:block;color:var(--muted);font-size:.8rem}
+.sos b{font-family:var(--mono);font-size:1rem;word-break:break-word}
+
+/* host panel */
+.hostpanel{border:2px dashed var(--sun)}
+.hostpanel h3{margin-top:4px}
+.qrbox{display:grid;grid-template-columns:auto 1fr;gap:16px;align-items:center}
+.sign{background:#fff;color:#10233a;border-radius:16px;padding:14px;display:grid;gap:8px;justify-items:center;width:190px;border:1px solid var(--line)}
+.sign b{font-family:var(--display);font-size:1rem;text-align:center;line-height:1.15}
+.sign small{font-size:.72rem;text-align:center;color:#4b5d6e}
+#qr{width:150px;height:150px;line-height:0}
+#qr img,#qr canvas{width:150px!important;height:150px!important}
+.snippet{white-space:pre-wrap;font-size:.9rem;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:12px}
+.tbl{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.9rem;font-variant-numeric:tabular-nums}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--mono);font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500}
+.empty{color:var(--muted);font-size:.92rem;padding:12px;border:1px dashed var(--line);border-radius:12px}
+footer{text-align:center;color:var(--muted);font-size:.85rem;padding-bottom:32px}
+footer b{font-family:var(--display);color:var(--ink)}
+@media (max-width:460px){.qrbox{grid-template-columns:1fr;justify-items:start}}
+</style>
+
+<div class="sample">Sample guidebook for an example property. <a href="/signup">Get one for your place →</a></div>
+
+<header class="hero">
+  <div class="wrap">
+    <small>Welcome to</small>
+    <h1>The Signal Loft</h1>
+    <p class="addr">A two-bed flat by the Old High Street, Folkestone</p>
+    <div class="host">
+      <div class="avatar" aria-hidden="true">S</div>
+      <p>Hi, I'm Sarah. Everything for your stay is on this page. Stuck? Message me on WhatsApp any time.</p>
+    </div>
+  </div>
+</header>
+
+<nav class="tabs" aria-label="Guidebook sections">
+  <div class="wrap" id="tabbar">
+    <a href="#arrive" class="on">Arrive</a>
+    <a href="#wifi">Wi-Fi</a>
+    <a href="#howto">How-to photos</a>
+    <a href="#parking">Parking</a>
+    <a href="#local">Local picks</a>
+    <a href="#leave">Check-out</a>
+    <a href="#help">Help</a>
+    <a href="#host" class="hosttab" id="hosttab" hidden>Host tools</a>
+  </div>
+</nav>
+
+<main class="wrap">
+
+  <section class="card" id="arrive">
+    <span class="k">Arrive</span>
+    <h2>Getting in</h2>
+    <div class="facts">
+      <div class="fact"><span>Check-in</span><b>from 4pm</b></div>
+      <div class="fact"><span>Early arrival</span><b>Ask the day before</b></div>
+      <div class="fact"><span>Floor</span><b>Second, no lift</b></div>
+    </div>
+    <ol class="steps">
+      <li>The front door is the blue one between the bakery and the bookshop.</li>
+      <li>The key safe is on the left of the door, at waist height.</li>
+      <li>Your code is in your booking message. Push the button down, then slide the cover open.</li>
+      <li>Two flights up, the flat is on the right. The big key opens the top lock.</li>
+    </ol>
+    <p class="note warn">Please spin the key safe dial and close the cover once you have the key.</p>
+  </section>
+
+  <section class="card" id="wifi">
+    <span class="k">Connect</span>
+    <h2>Wi-Fi</h2>
+    <div class="cred"><div><small>Network</small><code id="net">SignalLoft_Guest</code></div><button class="btn solid small copy" type="button" data-copy="net">Copy</button></div>
+    <div class="cred"><div><small>Password</small><code id="pw">seaview2026</code></div><button class="btn solid small copy" type="button" data-copy="pw">Copy</button></div>
+    <p class="note">The router is in the hallway cupboard. If it drops out, switch it off at the wall for ten seconds.</p>
+  </section>
+
+  <section class="card" id="howto">
+    <span class="k">How-to photos</span>
+    <h2>Show me where</h2>
+    <p class="muted">Photos of the bits guests always ask about. The numbered dots show exactly what to press or where to look.</p>
+    <div class="guides" id="guides"></div>
+    <div class="btnrow" id="addGuideRow" hidden><button class="btn" type="button" id="addGuide">+ Add a photo guide</button></div>
+    <details class="acc"><summary>House rules</summary><p>No smoking or parties. Quiet after 10pm as there are neighbours below. Well-behaved dogs welcome, but not on the beds.</p></details>
+  </section>
+
+  <section class="card" id="parking">
+    <span class="k">Park and travel</span>
+    <h2>Parking and getting around</h2>
+    <div class="facts">
+      <div class="fact"><span>On the street</span><b>Residents' permits only</b></div>
+      <div class="fact"><span>Visitor permit</span><b>On the hook by the door</b></div>
+      <div class="fact"><span>By train</span><b>Folkestone Central, about 20 min walk</b></div>
+    </div>
+    <p class="note">Leave the visitor permit on the dashboard, and hang it back up when you leave so the next guests have it.</p>
+  </section>
+
+  <section class="card" id="local">
+    <span class="k">Explore</span>
+    <h2>Sarah's local picks</h2>
+    <p class="muted">Every pick has a walking route from the flat. Been somewhere? Leave a quick rating for the next guests.</p>
+    <div class="picks" id="picks"></div>
+  </section>
+
+  <section class="card" id="leave">
+    <span class="k">Leave</span>
+    <h2>Check-out by 10am</h2>
+    <p class="progress" id="prog">0 of 6 done</p>
+    <form id="coForm" class="check" novalidate>
+      <div class="check" id="checklist"></div>
+      <label class="f" for="coIssues">Anything broken, used up or worth knowing?
+        <textarea id="coIssues" placeholder="e.g. Ran out of washing-up liquid, the bedroom lamp bulb has gone"></textarea>
+      </label>
+      <div class="f"><span>How was your stay?</span>
+        <div class="starpick" id="coStars" role="radiogroup" aria-label="Stay rating"></div>
+      </div>
+      <label class="f" for="coName">Your name
+        <input type="text" id="coName" autocomplete="name" placeholder="So Sarah knows who's checked out">
+      </label>
+      <div class="btnrow">
+        <button class="btn solid" type="submit" id="coSave">I've checked out</button>
+        <a class="btn wa" id="coWa" href="#" target="_blank" rel="noopener">Send to Sarah on WhatsApp</a>
+      </div>
+      <p class="status" id="coStatus" hidden></p>
+    </form>
+    <p class="note">Leave the towels and bedding where they are. Safe travels, and thank you for staying.</p>
+  </section>
+
+  <section class="card" id="help">
+    <span class="k">Help</span>
+    <h2>If something goes wrong</h2>
+    <div class="btnrow">
+      <a class="btn wa" id="waHelp" href="#" target="_blank" rel="noopener">WhatsApp Sarah</a>
+    </div>
+    <div class="sos">
+      <div><small>Sarah (WhatsApp or call)</small><b>07700 900123</b></div>
+      <div><small>Emergency</small><b>999</b></div>
+      <div><small>Non-urgent medical</small><b>111</b></div>
+      <div><small>Power off?</small><b><a href="#g-fuse">See fuse box photo</a></b></div>
+    </div>
+  </section>
+
+  <section class="card hostpanel" id="host" hidden>
+    <span class="k">Host tools · only you see this</span>
+    <h2>Run your guidebook</h2>
+    <p class="muted small" id="hostMode"></p>
+
+    <h3>QR code for your booking emails and door sign</h3>
+    <label class="f" for="gbLink">Your guidebook link
+      <input type="url" id="gbLink" value="https://guestsetgo.com/signal-loft">
+    </label>
+    <div class="qrbox">
+      <div class="sign" id="sign"><div id="qr" aria-label="QR code for the guidebook"></div><b>Scan for Wi-Fi, check-in and local tips</b><small>The Signal Loft</small></div>
+      <div style="display:grid;gap:8px;min-width:0">
+        <p class="small muted">Attach the QR to your booking confirmation and print it for inside the front door.</p>
+        <div class="btnrow"><button class="btn solid small" type="button" id="qrSave">Save QR as image</button><button class="btn small" type="button" id="snipCopy">Copy email text</button></div>
+      </div>
+    </div>
+    <div class="snippet" id="snippet"></div>
+
+    <h3>Check-outs from guests</h3>
+    <div id="coList"></div>
+
+    <h3>Guest ratings of local places</h3>
+    <p class="small muted">This is the data to take to local pubs and cafés when you offer them a featured spot.</p>
+    <div id="revTable"></div>
+
+    <h3>Photo guides</h3>
+    <p class="small muted">Use "Edit" on any photo guide above to swap in your own photo, tap to drop numbered dots, and change the steps.</p>
+  </section>
+
+</main>
+
+<footer class="wrap">Guidebook by <b>GuestSetGo</b></footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+(() => {
+"use strict";
+const HOST_WA = "447700900123", HOST_NAME = "Sarah", PROPERTY = "The Signal Loft";
+const ORIGIN = "Old High Street, Folkestone";
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const store = { get(k, d){ try{ const v = localStorage.getItem(k); return v ? JSON.parse(v) : d }catch(_){ return d } }, set(k, v){ try{ localStorage.setItem(k, JSON.stringify(v)) }catch(_){} } };
+const wa = text => `https://wa.me/${HOST_WA}?text=${encodeURIComponent(text)}`;
+
+/* ---------- Example illustrations (stand-ins until the host adds real photos) ---------- */
+const ART = {
+  tv: `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="TV remote"><rect width="400" height="260" fill="#c9b9a3"/><rect y="170" width="400" height="90" fill="#8c6f5a"/><rect x="40" y="30" width="150" height="100" rx="6" fill="#1b1f24"/><rect x="48" y="38" width="134" height="84" fill="#2d4a5e"/><rect x="240" y="20" width="70" height="225" rx="30" fill="#24272c"/><circle cx="275" cy="48" r="10" fill="#d33a2c"/><g fill="#5a5f66"><rect x="255" y="72" width="16" height="12" rx="3"/><rect x="279" y="72" width="16" height="12" rx="3"/><rect x="255" y="92" width="16" height="12" rx="3"/><rect x="279" y="92" width="16" height="12" rx="3"/></g><circle cx="275" cy="135" r="22" fill="#3b3f46"/><circle cx="275" cy="135" r="9" fill="#5a5f66"/><rect x="252" y="178" width="46" height="16" rx="4" fill="#d33a2c"/><text x="275" y="190" font-family="Arial" font-size="9" font-weight="700" fill="#fff" text-anchor="middle">NETFLIX</text><rect x="252" y="200" width="46" height="12" rx="4" fill="#5a5f66"/></svg>`,
+  fuse: `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fuse box"><rect width="400" height="260" fill="#e8e3da"/><rect x="40" y="50" width="320" height="160" rx="8" fill="#f7f7f5" stroke="#b9b4ab" stroke-width="3"/><rect x="60" y="90" width="280" height="80" fill="#dcdcd8"/><rect x="72" y="98" width="44" height="64" rx="3" fill="#c0392b"/><rect x="84" y="108" width="20" height="18" rx="2" fill="#fff"/><g fill="#2f6fa8"><rect x="128" y="98" width="30" height="64" rx="3"/><rect x="290" y="98" width="30" height="64" rx="3"/></g><g fill="#fafafa" stroke="#9a9a9a"><rect x="166" y="98" width="18" height="64" rx="2"/><rect x="188" y="98" width="18" height="64" rx="2"/><rect x="210" y="98" width="18" height="64" rx="2"/><rect x="232" y="98" width="18" height="64" rx="2"/><rect x="254" y="98" width="18" height="64" rx="2"/></g><g fill="#333"><rect x="170" y="106" width="10" height="14"/><rect x="192" y="106" width="10" height="14"/><rect x="214" y="140" width="10" height="14"/><rect x="236" y="106" width="10" height="14"/><rect x="258" y="106" width="10" height="14"/></g><g fill="#fff"><rect x="136" y="106" width="14" height="14"/><rect x="298" y="106" width="14" height="14"/></g></svg>`,
+  dish: `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Under the kitchen sink"><rect width="400" height="260" fill="#6f7e86"/><rect x="30" y="20" width="340" height="230" fill="#efeae1"/><rect x="60" y="40" width="40" height="160" fill="#b8c2c7"/><rect x="60" y="40" width="200" height="14" fill="#b8c2c7"/><circle cx="80" cy="205" r="14" fill="#c0392b"/><rect x="74" y="200" width="12" height="40" fill="#b8c2c7"/><rect x="160" y="150" width="90" height="70" rx="4" fill="#1e88c7"/><rect x="170" y="165" width="70" height="20" fill="#fff"/><text x="205" y="179" font-family="Arial" font-size="11" font-weight="700" fill="#1e88c7" text-anchor="middle">TABLETS</text><rect x="275" y="140" width="70" height="80" rx="6" fill="#f4c542"/><rect x="290" y="120" width="40" height="22" fill="#f4c542"/><rect x="300" y="110" width="20" height="12" fill="#d8a91f"/></svg>`,
+  bins: `<svg viewBox="0 0 400 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Bins at the kerb"><rect width="400" height="260" fill="#cfd8dc"/><rect y="150" width="400" height="70" fill="#9ea7ab"/><rect y="215" width="400" height="45" fill="#4a5257"/><rect y="148" width="400" height="6" fill="#7d868a"/><rect x="0" y="20" width="400" height="128" fill="#b45f3c"/><rect x="40" y="40" width="70" height="108" fill="#2b5c8a"/><rect x="300" y="50" width="8" height="150" fill="#2c2f33"/><rect x="288" y="40" width="32" height="14" rx="4" fill="#2c2f33"/><rect x="160" y="110" width="60" height="85" rx="4" fill="#5d6469"/><rect x="155" y="104" width="70" height="12" rx="3" fill="#4b5155"/><circle cx="170" cy="198" r="7" fill="#222"/><circle cx="210" cy="198" r="7" fill="#222"/><rect x="235" y="160" width="50" height="35" rx="3" fill="#2e7ec4"/></svg>`
+};
+const EXAMPLE_GUIDES = [
+  { id:"tv", order:1, title:"Watch Netflix on the TV", area:"Living room", art:"tv",
+    pins:[{x:68.8,y:18.5,label:"Press the red power button. Give the TV ten seconds."},{x:68.8,y:71.5,label:"Press the red NETFLIX button. Choose the Guest profile."}],
+    steps:["Use the black remote, not the silver one.","If the screen says No Signal, press the round button in the middle."] },
+  { id:"fuse", order:2, title:"If the power goes off", area:"Hallway cupboard, above the router", art:"fuse",
+    pins:[{x:23.5,y:50,label:"Main switch. Should point up."},{x:55.5,y:56,label:"A tripped switch points down. Push it back up."}],
+    steps:["Unplug whatever you were using when it went off.","Push the switch that's pointing down back up.","If it trips again, WhatsApp Sarah."] },
+  { id:"dish", order:3, title:"Dishwasher tablets and stopcock", area:"Cupboard under the sink", art:"dish",
+    pins:[{x:51.3,y:67,label:"Dishwasher tablets, washing-up liquid and bin bags."},{x:20,y:78.8,label:"Water stopcock. Turn clockwise to stop a leak."}],
+    steps:["One tablet in the door flap, close it, press Eco then Start.","Spare bin bags are behind the tablets."] },
+  { id:"bins", order:4, title:"Bins out on Tuesday night", area:"Kerb outside the front door", art:"bins",
+    pins:[{x:47.5,y:58,label:"Grey bin: general rubbish, bagged."},{x:65,y:68,label:"Blue box: cans, bottles, card. No bags."},{x:76,y:40,label:"Leave both by the lamppost, not the shop door."}],
+    steps:["Only needed if you're here on a Tuesday.","Bring them back to the side passage on Wednesday if you're still here."] }
+];
+
+/* ---------- Local picks with walking routes ---------- */
+const PICKS = [
+  { id:"harbour-arm", name:"The Harbour Arm", type:"Food, drink and sunsets", mins:12, dist:"0.6 mi",
+    desc:"Street food, bars and sunsets on the old railway pier. Busiest on Friday and Saturday evenings.",
+    dest:"Folkestone Harbour Arm", steps:["Walk down the Old High Street to the bottom of the hill.","Carry on towards the harbour and the fishing boats.","Follow the signs for the Harbour Arm past the old station platform.","Walk out along the pier. The lighthouse bar is at the far end."] },
+  { id:"harbour-lantern", name:"The Harbour Lantern", type:"Pub", example:true, mins:5, dist:"0.25 mi",
+    desc:"Proper pub with a fire, local ales and a dog bowl by the bar. Sunday roast worth booking.",
+    dest:"Harbour Street, Folkestone", steps:["Walk down the Old High Street to the bottom.","Turn left onto Harbour Street.","The pub is a few doors along on the left."] },
+  { id:"stade-fish-bar", name:"Stade Fish Bar", type:"Fish and chips", example:true, mins:8, dist:"0.4 mi",
+    desc:"Fish straight from the harbour boats. Take it to the beach, but watch out for the gulls.",
+    dest:"The Stade, Folkestone", steps:["Walk down the Old High Street to the bottom.","Head towards the harbour and the fish market on The Stade.","It's along The Stade, opposite the boats."] },
+  { id:"sunny-sands", name:"Sunny Sands", type:"Beach", mins:12, dist:"0.6 mi",
+    desc:"The sandy beach by the harbour, under the East Cliff. Good for a paddle when the tide's in.",
+    dest:"Sunny Sands Beach, Folkestone", steps:["Walk down the Old High Street to the harbour.","Follow The Stade past the fish market.","Keep going until the sand opens up under the cliff."] },
+  { id:"the-leas", name:"The Leas", type:"Clifftop walk", mins:15, dist:"0.8 mi",
+    desc:"The clifftop promenade with views to France on a clear day. Loop back along the lower coastal path.",
+    dest:"The Leas, Folkestone", steps:["Walk up the Old High Street to the top.","Turn left and head west through the town centre.","Keep going until you reach the bandstand on the clifftop."] }
+];
+const mapsLink = p => `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(ORIGIN)}&destination=${encodeURIComponent(p.dest)}&travelmode=walking`;
+
+/* ---------- State ---------- */
+let db = null, assets = null, downloads = null, me = null, isHost = false, canWrite = false;
+let savedGuides = {};            // id -> doc from db (or local session)
+let reviews = [];                // [{id, place, stars, recommend, text, name, at}]
+let checkouts = [];
+let editingId = null, draft = null;
+const inArtifact = !!(window.claude && window.claude.use);
+
+/* ---------- Photo guides ---------- */
+function allGuides(){
+  const byId = {};
+  EXAMPLE_GUIDES.forEach(g => byId[g.id] = {...g, example:true});
+  Object.values(savedGuides).forEach(g => byId[g.id] = {...(byId[g.id]||{}), ...g, example:false});
+  return Object.values(byId).filter(g => !g.deleted).sort((a,b)=>(a.order||99)-(b.order||99));
+}
+function photoHTML(g){
+  const media = g.img ? `<img src="${esc(g.img)}" alt="${esc(g.title)}">` : (ART[g.art] || `<svg viewBox="0 0 400 260"><rect width="400" height="260" fill="#9ea7ab"/></svg>`);
+  const pins = (g.pins||[]).map((p,i)=>`<span class="pin" style="left:${p.x}%;top:${p.y}%" aria-hidden="true">${i+1}</span>`).join("");
+  return media + pins;
+}
+function renderGuides(){
+  const el = $("#guides");
+  el.innerHTML = allGuides().map(g => {
+    const editing = editingId === g.id, d = editing ? draft : g;
+    return `<article class="guide" id="g-${esc(g.id)}">
+      <div class="guide-head"><div><h3>${esc(d.title)}</h3><p class="small muted">${esc(d.area||"")}</p></div>
+        ${g.example && !editing ? `<span class="badge">Example drawing</span>` : ""}</div>
+      <div class="photo${editing?" editing":""}" data-photo="${esc(g.id)}">${photoHTML(d)}</div>
+      <div class="guide-body">
+        <ol class="pinlist">${(d.pins||[]).map((p,i)=>`<li><span class="n">${i+1}</span><span>${esc(p.label)}</span></li>`).join("")}</ol>
+        ${(d.steps||[]).length ? `<ul class="small muted" style="margin:0;padding-left:1.1em;display:grid;gap:4px">${d.steps.map(s=>`<li>${esc(s)}</li>`).join("")}</ul>` : ""}
+        ${isHost && !editing ? `<div class="btnrow"><button class="btn small" type="button" data-edit="${esc(g.id)}">Edit photo and dots</button></div>` : ""}
+        ${editing ? editorHTML(d) : ""}
+      </div></article>`;
+  }).join("");
+}
+function editorHTML(d){
+  return `<div class="editor">
+    <p class="small"><b>Tap the photo</b> to drop a numbered dot, then write what it shows.</p>
+    <label class="f" for="edPhoto">Photo<input type="file" id="edPhoto" accept="image/*" capture="environment"></label>
+    <label class="f" for="edTitle">Title<input type="text" id="edTitle" value="${esc(d.title)}"></label>
+    <label class="f" for="edArea">Where it is<input type="text" id="edArea" value="${esc(d.area||"")}"></label>
+    <div class="f"><span>Dots</span>${(d.pins||[]).map((p,i)=>`<div class="pinedit"><span class="pin" style="position:static;transform:none;width:26px;height:26px;flex:none">${i+1}</span><input type="text" id="edPin${i}" data-pin="${i}" value="${esc(p.label)}" aria-label="Dot ${i+1} label"><button class="btn small" type="button" data-rmpin="${i}">Remove</button></div>`).join("") || `<span class="small muted">No dots yet.</span>`}</div>
+    <label class="f" for="edSteps">Extra steps, one per line<textarea id="edSteps">${esc((d.steps||[]).join("\n"))}</textarea></label>
+    <div class="btnrow"><button class="btn solid" type="button" id="edSave">Save guide</button><button class="btn" type="button" id="edCancel">Cancel</button><button class="btn" type="button" id="edDelete">Remove guide</button></div>
+    <p class="status" id="edStatus" hidden></p>
+  </div>`;
+}
+function syncDraftFromInputs(){
+  if(!draft) return;
+  const t=$("#edTitle"), a=$("#edArea"), s=$("#edSteps");
+  if(t) draft.title=t.value; if(a) draft.area=a.value;
+  if(s) draft.steps=s.value.split("\n").map(x=>x.trim()).filter(Boolean);
+  document.querySelectorAll("[data-pin]").forEach(inp=>{ const i=+inp.dataset.pin; if(draft.pins[i]) draft.pins[i].label=inp.value; });
+}
+async function shrink(file){
+  const url = URL.createObjectURL(file);
+  try{
+    const img = await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
+    const max=1600, sc=Math.min(1, max/Math.max(img.width,img.height));
+    const c=document.createElement("canvas"); c.width=Math.round(img.width*sc); c.height=Math.round(img.height*sc);
+    c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+    return await new Promise(r=>c.toBlob(r,"image/jpeg",.82));
+  } finally { URL.revokeObjectURL(url); }
+}
+$("#guides").addEventListener("click", e => {
+  const ed = e.target.closest("[data-edit]");
+  if(ed){ const g = allGuides().find(x=>x.id===ed.dataset.edit); editingId=g.id; draft=JSON.parse(JSON.stringify(g)); draft.pins=draft.pins||[]; renderGuides(); return; }
+  const rm = e.target.closest("[data-rmpin]");
+  if(rm){ syncDraftFromInputs(); draft.pins.splice(+rm.dataset.rmpin,1); renderGuides(); return; }
+  const ph = e.target.closest(".photo.editing");
+  if(ph && !e.target.closest(".pin")){
+    syncDraftFromInputs();
+    const r = ph.getBoundingClientRect();
+    draft.pins.push({ x:+(((e.clientX-r.left)/r.width)*100).toFixed(1), y:+(((e.clientY-r.top)/r.height)*100).toFixed(1), label:"" });
+    renderGuides();
+    const last = document.getElementById("edPin"+(draft.pins.length-1)); if(last) last.focus();
+    return;
+  }
+  if(e.target.id==="edCancel"){ editingId=null; draft=null; renderGuides(); return; }
+  if(e.target.id==="edSave"){ saveGuide(false); return; }
+  if(e.target.id==="edDelete"){
+    const b=e.target; if(b.dataset.armed){ saveGuide(true) } else { b.dataset.armed="1"; b.textContent="Tap again to remove"; }
+  }
+});
+$("#guides").addEventListener("change", async e => {
+  if(e.target.id!=="edPhoto" || !e.target.files[0]) return;
+  syncDraftFromInputs();
+  const st=$("#edStatus"); st.hidden=false; st.textContent="Preparing photo…";
+  try{
+    const blob = await shrink(e.target.files[0]);
+    if(assets){
+      st.textContent="Uploading photo…";
+      const up = await assets.upload(blob);
+      draft.img = up.url; draft.assetId = up.id;
+    } else {
+      draft.img = URL.createObjectURL(blob);
+    }
+    draft.pins = []; renderGuides();
+    const s2=$("#edStatus"); s2.hidden=false; s2.textContent= assets ? "Photo added. Tap it to place dots, then save." : "Photo added on this device only. Tap it to place dots.";
+  }catch(err){ st.textContent="That photo couldn't be added. Try a JPG or PNG under 20 MB."; }
+});
+async function saveGuide(remove){
+  syncDraftFromInputs();
+  const st=$("#edStatus"); if(st){ st.hidden=false; st.textContent="Saving…"; }
+  const doc = remove ? {id:draft.id, deleted:true} :
+    {id:draft.id, order:draft.order||99, title:draft.title||"Untitled guide", area:draft.area||"", art:draft.art||null,
+     img:draft.img||null, assetId:draft.assetId||null, pins:(draft.pins||[]).map(p=>({x:p.x,y:p.y,label:p.label||""})), steps:draft.steps||[]};
+  if(doc.img && doc.img.startsWith("blob:") && db){ doc.img=null; }
+  try{
+    if(db && isHost){ await db.doc("guides/"+doc.id).set(doc); }
+    savedGuides[doc.id]=doc;
+    editingId=null; draft=null; renderGuides();
+  }catch(err){ if(st) st.textContent="Couldn't save. Check your connection and try again."; }
+}
+$("#addGuide").addEventListener("click", () => {
+  const id = "g"+Date.now().toString(36);
+  savedGuides[id] = {id, order:50, title:"New photo guide", area:"", pins:[], steps:[], art:null};
+  editingId=id; draft=JSON.parse(JSON.stringify(savedGuides[id])); renderGuides();
+  document.getElementById("g-"+id)?.scrollIntoView({behavior:"smooth", block:"start"});
+});
+
+/* ---------- Local picks, routes and reviews ---------- */
+let openForm = null, formState = {stars:0, recommend:null};
+const starStr = n => { const r=Math.round(n); return `<span class="stars" aria-label="${n.toFixed(1)} out of 5">${"★".repeat(r)}<span class="off">${"★".repeat(5-r)}</span></span>`; };
+function placeStats(id){
+  const rs = reviews.filter(r=>r.place===id);
+  const avg = rs.length ? rs.reduce((a,r)=>a+(+r.stars||0),0)/rs.length : 0;
+  const rec = rs.filter(r=>r.recommend===true).length;
+  return {rs, avg, count:rs.length, recPct: rs.length ? Math.round(rec/rs.length*100) : 0};
+}
+function renderPicks(){
+  $("#picks").innerHTML = PICKS.map(p => {
+    const s = placeStats(p.id);
+    const recent = s.rs.slice().sort((a,b)=>(b.at||"").localeCompare(a.at||"")).slice(0,2);
+    return `<article class="pick" id="p-${p.id}">
+      <div class="meta"><span>${esc(p.type)}</span><span>${p.mins} min walk · ${p.dist}</span>${p.example?`<span class="ex">Example business</span>`:""}</div>
+      <h3>${esc(p.name)}</h3>
+      <p class="desc">${esc(p.desc)}</p>
+      <details class="acc"><summary>Walking route from the flat</summary>
+        <div class="route"><ol>${p.steps.map(x=>`<li>${esc(x)}</li>`).join("")}</ol>
+        <a class="btn solid small" href="${mapsLink(p)}" target="_blank" rel="noopener">Open walking route in Google Maps</a></div>
+      </details>
+      <div class="rating">${s.count ? `${starStr(s.avg)}<span>${s.avg.toFixed(1)} from ${s.count} guest${s.count>1?"s":""}</span>` : `<span class="muted">No guest ratings yet</span>`}
+        <button class="btn small" type="button" data-rate="${p.id}">${openForm===p.id?"Close":"Been here? Rate it"}</button></div>
+      ${recent.length ? `<div class="revs">${recent.map(r=>`<div class="rev">${r.text?`“${esc(r.text)}”`:""}<div class="who">${esc(r.name||"A guest")} · ${"★".repeat(+r.stars||0)}</div></div>`).join("")}</div>` : ""}
+      ${openForm===p.id ? `<form class="revform" data-revform="${p.id}" novalidate>
+        <div class="f"><span>Your rating</span><div class="starpick">${[1,2,3,4,5].map(n=>`<button type="button" data-star="${n}" class="${n<=formState.stars?"on":""}" aria-label="${n} star${n>1?"s":""}">★</button>`).join("")}</div></div>
+        <div class="f"><span>Would you recommend it to the next guests?</span><div class="seg"><button type="button" data-rec="yes" class="${formState.recommend===true?"on":""}">Yes</button><button type="button" data-rec="no" class="${formState.recommend===false?"on":""}">Not really</button></div></div>
+        <label class="f" for="rvText-${p.id}">Tip for the next guests (optional)<input type="text" id="rvText-${p.id}" maxlength="200" placeholder="e.g. Get there before 7, the crab is the thing to order"></label>
+        <label class="f" for="rvName-${p.id}">First name (optional)<input type="text" id="rvName-${p.id}" maxlength="40"></label>
+        <div class="btnrow"><button class="btn solid" type="submit">Post rating</button></div>
+        <p class="status" data-revstatus hidden></p>
+      </form>` : ""}
+    </article>`;
+  }).join("");
+}
+$("#picks").addEventListener("click", e => {
+  const rt=e.target.closest("[data-rate]");
+  if(rt){ openForm = openForm===rt.dataset.rate ? null : rt.dataset.rate; formState={stars:0,recommend:null}; renderPicks(); return; }
+  const st=e.target.closest("[data-star]");
+  if(st){ formState.stars=+st.dataset.star; st.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on", +b.dataset.star<=formState.stars)); return; }
+  const rc=e.target.closest("[data-rec]");
+  if(rc){ formState.recommend = rc.dataset.rec==="yes"; rc.parentElement.querySelectorAll("button").forEach(b=>b.classList.toggle("on", b===rc)); }
+});
+$("#picks").addEventListener("submit", async e => {
+  e.preventDefault();
+  const f=e.target, place=f.dataset.revform, msg=f.querySelector("[data-revstatus]");
+  msg.hidden=false;
+  if(!formState.stars){ msg.textContent="Tap a star rating first."; return; }
+  const r = { place, stars:formState.stars, recommend:formState.recommend, text:(f.querySelector(`#rvText-${place}`).value||"").trim().slice(0,200), name:(f.querySelector(`#rvName-${place}`).value||"").trim().slice(0,40), property:PROPERTY, at:new Date().toISOString() };
+  try{
+    if(db && canWrite){ await db.collection("reviews").add(r); }
+    else { const loc=store.get("gsg-reviews",[]); r.id="local-"+Date.now(); loc.push(r); store.set("gsg-reviews",loc); reviews.push(r); }
+    openForm=null; renderPicks(); renderHost();
+  }catch(err){ msg.textContent="Couldn't post that. Check your connection and try again."; }
+});
+
+/* ---------- Check-out ---------- */
+const TASKS = ["Load and start the dishwasher","Bins emptied into the outside bins","Thermostat back to 16","Windows closed and lights off","Visitor permit back on its hook","Keys back in the key safe and dial spun"];
+let coStars = 0;
+$("#checklist").innerHTML = TASKS.map((t,i)=>`<label><input type="checkbox" id="c${i}"><span>${esc(t)}</span></label>`).join("");
+$("#coStars").innerHTML = [1,2,3,4,5].map(n=>`<button type="button" data-cs="${n}" role="radio" aria-checked="false" aria-label="${n} star${n>1?"s":""}">★</button>`).join("");
+const boxes=[...document.querySelectorAll("#checklist input")];
+try{ const saved=store.get("signal-loft-checkout",[]); boxes.forEach(b=>{ if(saved.includes(b.id)) b.checked=true; }); }catch(_){}
+function coSummary(){
+  const done=boxes.filter(b=>b.checked).map(b=>TASKS[+b.id.slice(1)]), notDone=TASKS.filter(t=>!done.includes(t));
+  const name=$("#coName").value.trim(), issues=$("#coIssues").value.trim();
+  let t=`Check-out: ${PROPERTY}\n${name?`From: ${name}\n`:""}Done ${done.length}/${TASKS.length}`;
+  if(notDone.length) t+=`\nNot done: ${notDone.join("; ")}`;
+  if(issues) t+=`\nNotes: ${issues}`;
+  if(coStars) t+=`\nStay rating: ${coStars}/5`;
+  return {done, notDone, name, issues, text:t};
+}
+function updateCo(){
+  const n=boxes.filter(b=>b.checked).length; $("#prog").textContent=`${n} of ${boxes.length} done`;
+  store.set("signal-loft-checkout", boxes.filter(b=>b.checked).map(b=>b.id));
+  $("#coWa").href = wa(coSummary().text);
+}
+boxes.forEach(b=>b.addEventListener("change",updateCo));
+["coName","coIssues"].forEach(id=>$("#"+id).addEventListener("input",updateCo));
+$("#coStars").addEventListener("click",e=>{ const b=e.target.closest("[data-cs]"); if(!b) return; coStars=+b.dataset.cs; $("#coStars").querySelectorAll("button").forEach(x=>{ const on=+x.dataset.cs<=coStars; x.classList.toggle("on",on); x.setAttribute("aria-checked", String(+x.dataset.cs===coStars)); }); updateCo(); });
+$("#coForm").addEventListener("submit", async e => {
+  e.preventDefault();
+  const s=coSummary(), st=$("#coStatus"); st.hidden=false;
+  const rec={property:PROPERTY, name:s.name, done:s.done, notDone:s.notDone, issues:s.issues, stars:coStars||null, at:new Date().toISOString()};
+  if(db && canWrite){
+    try{ await db.collection("checkouts").add(rec); st.textContent=`Thanks${s.name?", "+s.name:""}. Sarah has your check-out. Safe travels.`; }
+    catch(err){ st.textContent="Couldn't send that. Use the WhatsApp button so Sarah still gets it."; }
+  } else {
+    st.textContent="Saved on this phone. Tap \"Send to Sarah on WhatsApp\" so she gets it.";
+  }
+});
+updateCo();
+$("#waHelp").href = wa(`Hi ${HOST_NAME}, I'm staying at ${PROPERTY} and need a hand with something.`);
+
+/* ---------- Host panel ---------- */
+let qr = null;
+function linkVal(){ return ($("#gbLink").value||"").trim() || "https://guestsetgo.com/signal-loft"; }
+function renderQR(){
+  const el=$("#qr"); el.innerHTML="";
+  if(window.QRCode){ qr = new QRCode(el, {text:linkVal(), width:300, height:300, colorDark:"#10233a", colorLight:"#ffffff", correctLevel:QRCode.CorrectLevel.M}); }
+  else { el.innerHTML='<p class="small" style="line-height:1.3;color:#10233a">QR library didn\'t load. Check your connection.</p>'; }
+  $("#snippet").textContent =
+`Your guidebook for ${PROPERTY}
+
+Everything for your stay is here: check-in steps, Wi-Fi, parking, how things work, and our favourite local spots with walking routes.
+
+${linkVal()}
+
+You'll also find a QR code just inside the front door. Any problems, message ${HOST_NAME} on WhatsApp: 07700 900123.`;
+}
+$("#gbLink").addEventListener("change", renderQR);
+$("#snipCopy").addEventListener("click", e => {
+  const b=e.currentTarget, t=$("#snippet").textContent;
+  try{ navigator.clipboard.writeText(t).then(()=>{ b.textContent="Copied"; setTimeout(()=>b.textContent="Copy email text",1600); }, sel); }catch(_){ sel(); }
+  function sel(){ const r=document.createRange(); r.selectNodeContents($("#snippet")); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Selected, press copy"; }
+});
+async function qrBlob(){
+  // Door-sign PNG: QR plus a line of text, so it can go straight into an email or onto a printout
+  const src=$("#qr canvas"); if(!src) return null;
+  const W=600,H=720,c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d");
+  x.fillStyle="#ffffff"; x.fillRect(0,0,W,H); x.drawImage(src,75,60,450,450);
+  x.fillStyle="#10233a"; x.textAlign="center"; x.font="700 34px 'Bricolage Grotesque', Arial, sans-serif";
+  x.fillText("Scan for Wi-Fi, check-in", W/2, 580); x.fillText("and local tips", W/2, 622);
+  x.font="400 24px Arial, sans-serif"; x.fillStyle="#4b5d6e"; x.fillText(PROPERTY, W/2, 672);
+  return await new Promise(r=>c.toBlob(r,"image/png"));
+}
+$("#qrSave").addEventListener("click", async e => {
+  const b=e.currentTarget, blob=await qrBlob(); if(!blob) return;
+  const fname="signal-loft-guidebook-qr.png";
+  if(downloads){ try{ await downloads.save({filename:fname, data:blob}); }catch(_){ b.textContent="Save cancelled"; setTimeout(()=>b.textContent="Save QR as image",1600); } return; }
+  if(!inArtifact){ const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=fname; document.body.appendChild(a); a.click(); a.remove(); return; }
+  b.textContent="Press and hold the QR to save it"; setTimeout(()=>b.textContent="Save QR as image",2400);
+});
+function renderHost(){
+  if(!isHost) return;
+  $("#hostMode").textContent = db
+    ? "Photos, check-outs and guest ratings save here and show up for you live."
+    : "Preview mode: changes stay on this device. On your live site these save to your account.";
+  const cos = checkouts.slice().sort((a,b)=>(b.at||"").localeCompare(a.at||""));
+  $("#coList").innerHTML = cos.length ? `<div class="tbl"><table><thead><tr><th>When</th><th>Guest</th><th>Tasks</th><th>Notes</th><th>Stay</th></tr></thead><tbody>${cos.map(c=>`<tr><td>${esc(new Date(c.at).toLocaleString("en-GB",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"}))}</td><td>${esc(c.name||"—")}</td><td>${(c.done||[]).length}/${TASKS.length}${(c.notDone||[]).length?`<div class="small muted">Missed: ${esc(c.notDone.join("; "))}</div>`:""}</td><td>${esc(c.issues||"—")}</td><td>${c.stars?c.stars+"/5":"—"}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">No check-outs yet. When guests tap "I've checked out", they'll appear here with anything they flagged.</p>`;
+  const rows = PICKS.map(p=>({p, s:placeStats(p.id)}));
+  const any = rows.some(r=>r.s.count);
+  $("#revTable").innerHTML = any ? `<div class="tbl"><table><thead><tr><th>Place</th><th>Ratings</th><th>Average</th><th>Would recommend</th></tr></thead><tbody>${rows.sort((a,b)=>b.s.count-a.s.count).map(({p,s})=>`<tr><td>${esc(p.name)}</td><td>${s.count}</td><td>${s.count?s.avg.toFixed(1)+" ★":"—"}</td><td>${s.count?s.recPct+"%":"—"}</td></tr>`).join("")}</tbody></table></div>`
+    : `<p class="empty">No guest ratings yet. Each rating guests leave on a local pick is counted here by place.</p>`;
+}
+function enableHost(){
+  isHost = true;
+  $("#host").hidden=false; $("#hosttab").hidden=false; $("#addGuideRow").hidden=false;
+  renderQR(); renderGuides(); renderHost(); observeTabs();
+}
+
+/* ---------- Copy buttons ---------- */
+document.querySelectorAll(".copy").forEach(b=>b.addEventListener("click",()=>{
+  const el=document.getElementById(b.dataset.copy), t=el.textContent;
+  const ok=()=>{ b.textContent="Copied"; setTimeout(()=>b.textContent="Copy",1600); };
+  const sel=()=>{ const r=document.createRange(); r.selectNodeContents(el); const s=getSelection(); s.removeAllRanges(); s.addRange(r); b.textContent="Selected"; };
+  try{ navigator.clipboard.writeText(t).then(ok,sel); }catch(_){ sel(); }
+}));
+
+/* ---------- Active tab ---------- */
+let io=null;
+function observeTabs(){
+  const tabs=[...document.querySelectorAll(".tabs a")];
+  io?.disconnect();
+  io=new IntersectionObserver(es=>es.forEach(e=>{ if(e.isIntersecting) tabs.forEach(t=>t.classList.toggle("on", t.getAttribute("href")==="#"+e.target.id)); }),{rootMargin:"-40% 0px -55% 0px"});
+  document.querySelectorAll("main section:not([hidden])").forEach(s=>io.observe(s));
+}
+
+/* ---------- Boot ---------- */
+reviews = store.get("gsg-reviews",[]);
+renderGuides(); renderPicks(); observeTabs();
+
+if(!inArtifact){
+  // On your own site: host tools open at #host until accounts are added.
+  if(location.hash==="#host") enableHost();
+} else {
+  (async () => {
+    const [user, d, a, dl] = await Promise.all(["user","db","assets","downloads"].map(n=>window.claude.use(n).catch(()=>null)));
+    downloads = dl; db = d;
+    let host = false;
+    try{ host = !!(user && await user.canEdit()); }catch(_){}
+    try{ const w = user ? await user.can("data.write") : null; canWrite = !!db && w !== false; }catch(_){ canWrite = !!db; }
+    if(host){ assets = a; }
+    if(db){
+      reviews = [];
+      db.collection("guides").onSnapshot(s=>{ savedGuides={}; s.docs.forEach(x=>{ savedGuides[x.id]=x.data(); }); if(!editingId) renderGuides(); }, ()=>{});
+      db.collection("reviews").onSnapshot(s=>{ reviews=s.docs.map(x=>({id:x.id,...x.data()})); if(!openForm) renderPicks(); renderHost(); }, ()=>{});
+      if(host) db.collection("checkouts").onSnapshot(s=>{ checkouts=s.docs.map(x=>({id:x.id,...x.data()})); renderHost(); }, ()=>{});
+    }
+    if(host) enableHost();
+  })();
+}
+})();
+</script>
+</body></html>
