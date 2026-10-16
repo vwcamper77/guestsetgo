@@ -22,12 +22,13 @@ const STEPS = [
 
 export default async function Home() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://guestsetgo.com";
-  const qrDataUrl = await QRCode.toDataURL(siteUrl, { width: 240, margin: 1, color: { dark: "#10233a", light: "#ffffff" } });
+  const sampleUrl = new URL("/demo.html", siteUrl).toString();
+  const qrDataUrl = await QRCode.toDataURL(sampleUrl, { width: 280, margin: 4, color: { dark: "#10233a", light: "#ffffff" } });
   return (
     <>
       <div className="wrap">
         <nav className="site-nav">
-          <Link className="logo" href="/"><span className="tagdot" aria-hidden="true" />GuestSetGo</Link>
+          <Link className="logo brand-logo" href="/" aria-label="GuestSetGo home"><img src="/brand/guestsetgo-logo.png" alt="GuestSetGo" width={2172} height={724} /></Link>
           <div className="navlinks">
             <a className="hide-sm" href="/demo.html">See a sample</a>
             <a className="hide-sm" href="#pricing">Pricing</a>
@@ -58,10 +59,10 @@ export default async function Home() {
                 <div className="row"><span>Check-out</span><b>by 10am</b></div>
               </div>
             </div></div>
-            <a className="doorsign" href={siteUrl}>
-              <img src={qrDataUrl} alt={`QR code linking to ${siteUrl}`} width={120} height={120} />
-              <b>Scan to see GuestSetGo</b>
-              <small>{siteUrl.replace(/^https?:\/\//, "")}</small>
+            <a className="doorsign" href="/demo.html" aria-label="Open the sample guest guidebook, or scan its QR code">
+              <span className="doorsign-hole" aria-hidden="true" />
+              <img src={qrDataUrl} alt="Scan to open the sample guest guidebook" width={140} height={140} />
+              <b>Scan for your stay</b>
             </a>
           </div>
         </header>
