@@ -1,4 +1,5 @@
 import Link from "next/link";
+import QRCode from "qrcode";
 import { PLANS } from "@/lib/plans";
 
 export const metadata = { title: "GuestSetGo — digital guest guidebooks for holiday lets" };
@@ -19,7 +20,9 @@ const STEPS = [
   ["Change it any time", "New code, new bin day, new favourite pub? Edit it and it's live straight away."],
 ];
 
-export default function Home() {
+export default async function Home() {
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://guestsetgo.com";
+  const qrDataUrl = await QRCode.toDataURL(siteUrl, { width: 240, margin: 1, color: { dark: "#10233a", light: "#ffffff" } });
   return (
     <>
       <div className="wrap">
@@ -44,8 +47,8 @@ export default function Home() {
             </div>
             <p className="small muted">Based in Folkestone. Built for hosts along the Kent coast, from Whitstable to Rye.</p>
           </div>
-          <div className="stage" aria-hidden="true">
-            <div className="phone"><div className="screen">
+          <div className="stage">
+            <div className="phone" aria-hidden="true"><div className="screen">
               <div className="scr-head"><small>Welcome to</small><b>The Signal Loft</b></div>
               <div className="scr-body">
                 <div className="row"><span>Check-in</span><b>from 4pm</b></div>
@@ -55,6 +58,11 @@ export default function Home() {
                 <div className="row"><span>Check-out</span><b>by 10am</b></div>
               </div>
             </div></div>
+            <a className="doorsign" href={siteUrl}>
+              <img src={qrDataUrl} alt={`QR code linking to ${siteUrl}`} width={120} height={120} />
+              <b>Scan to see GuestSetGo</b>
+              <small>{siteUrl.replace(/^https?:\/\//, "")}</small>
+            </a>
           </div>
         </header>
       </div>
