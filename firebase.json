@@ -8,7 +8,16 @@
   },
   "auth": {
     "providers": {
-      "emailPassword": true
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "GuestSetGo",
+        "supportEmail": "hello@guestsetgo.com",
+        "authorizedRedirectUris": [
+          "https://guestsetgo.com",
+          "https://www.guestsetgo.com",
+          "http://localhost:3000"
+        ]
+      }
     }
   }
 }
