@@ -1,62 +1,61 @@
 "use client";
 import { useEffect, useState } from "react";
 import QRCode from "qrcode";
-
-export default function ShareTab({ property }) {
-  const site = process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "");
-  const link = `${site}/g/${property.slug}`;
+const esc = (v) => String(v || "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+export default function ShareTab({ property: p }) {
+  const site = (process.env.NEXT_PUBLIC_SITE_URL || (typeof window !== "undefined" ? window.location.origin : "")).replace(/\/$/, "");
+  const link = `${site}/g/${p.slug}`;
   const [qr, setQr] = useState("");
-  const [sign, setSign] = useState("");
-  const [copied, setCopied] = useState("");
-
+  const [recipient, setRecipient] = useState("");
+  const [welcome, setWelcome] = useState(p.intro || "We're delighted to welcome you. We hope you have a wonderful stay!");
+  const [status, setStatus] = useState("");
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const dataUrl = await QRCode.toDataURL(link, { width: 600, margin: 1, color: { dark: "#10233a", light: "#ffffff" } });
-      if (cancelled) return;
-      setQr(dataUrl);
-      // Door sign: QR with a short line underneath, ready to print or attach.
-      const img = await new Promise((r) => { const i = new Image(); i.onload = () => r(i); i.src = dataUrl; });
-      const W = 900, H = 1100, c = document.createElement("canvas"); c.width = W; c.height = H;
-      const x = c.getContext("2d");
-      x.fillStyle = "#ffffff"; x.fillRect(0, 0, W, H);
-      x.drawImage(img, 120, 90, 660, 660);
-      x.fillStyle = "#10233a"; x.textAlign = "center"; x.font = "700 52px Arial, sans-serif";
-      x.fillText("Scan for Wi-Fi, check-in", W / 2, 860); x.fillText("and local tips", W / 2, 925);
-      x.font = "400 36px Arial, sans-serif"; x.fillStyle = "#4b5d6e"; x.fillText(property.name, W / 2, 1000);
-      if (!cancelled) setSign(c.toDataURL("image/png"));
-    })();
-    return () => { cancelled = true; };
-  }, [link, property.name]);
-
-  const email = `Your guidebook for ${property.name}
-
-Everything for your stay is here: check-in steps, Wi-Fi, parking, how things work, and our favourite local spots with walking routes.
-
-${link}
-
-You'll also find a QR code just inside the front door.${property.whatsapp ? ` Any problems, message ${property.hostName || "us"} on WhatsApp: ${property.whatsapp}.` : ""}`;
-
-  const copy = (t, k) => navigator.clipboard?.writeText(t).then(() => { setCopied(k); setTimeout(() => setCopied(""), 1500); });
-
-  return (
-    <div className="listedit">
-      {!property.published && <p className="notice warn">This guidebook is a draft. Guests will see "not found" until you put it live.</p>}
-      <div className="field"><span>Guest link</span>
-        <div className="btnrow"><code style={{ wordBreak: "break-all" }}>{link}</code><button type="button" className="btn small" onClick={() => copy(link, "link")}>{copied === "link" ? "Copied" : "Copy link"}</button></div>
-      </div>
-      <div className="btnrow" style={{ alignItems: "flex-start", gap: 20 }}>
-        <div className="qrsign">{qr ? <img src={qr} alt="QR code for the guidebook" /> : <div style={{ width: 180, height: 180 }} />}<b>Scan for Wi-Fi, check-in and local tips</b><small>{property.name}</small></div>
-        <div className="listedit" style={{ flex: "1 1 240px" }}>
-          <p className="small muted">Attach the QR code to your booking confirmation email, add it to Airbnb saved messages, and print the door sign for inside the front door.</p>
-          {qr && <a className="btn solid small" href={qr} download={`${property.slug}-qr.png`}>Download QR code</a>}
-          {sign && <a className="btn small" href={sign} download={`${property.slug}-door-sign.png`}>Download door sign</a>}
-        </div>
-      </div>
-      <div className="field"><span>Text for your booking confirmation email</span>
-        <div className="snippet">{email}</div>
-        <div><button type="button" className="btn small" onClick={() => copy(email, "email")}>{copied === "email" ? "Copied" : "Copy email text"}</button></div>
-      </div>
+    let active = true;
+    setQr("");
+    QRCode.toDataURL(link, { width: 900, margin: 4, errorCorrectionLevel: "M" }).then(url => { if (active) setQr(url); }).catch(() => { if (active) setStatus("Could not generate QR code. Please reload and try again."); });
+    return () => { active = false; };
+  }, [link]);
+  const subject = `Here is your guide for your stay at ${p.name}`;
+  const body = `Welcome to ${p.name}!\n\n${welcome}\n\nYour welcome guide includes arrival information, Wi-Fi, parking, house instructions and local recommendations.${p.checkInTime ? `\nCheck-in: ${p.checkInTime}` : ""}${p.checkOutTime ? `\nCheck-out: ${p.checkOutTime}` : ""}\n\n${p.hostName ? `Your host: ${p.hostName}` : "Your host"}${p.phone ? `\nPhone: ${p.phone}` : ""}${p.whatsapp ? `\nWhatsApp: ${p.whatsapp}` : ""}\n\nWe look forward to welcoming you!${p.hostName ? `\n${p.hostName}` : ""}\n\nGet your welcome guide here:\n${link}`;
+  const query = `subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  async function copy(text) {
+    try { await navigator.clipboard.writeText(text); setStatus("Copied."); }
+    catch { setStatus("Copy is unavailable. Select and copy the preview text or guide link below."); }
+  }
+  function printSign(size) {
+    const win = window.open("", "_blank");
+    if (!win) { setStatus("Allow pop-ups to open your printable sign."); return; }
+    const accent = /^#[0-9a-f]{6}$/i.test(p.accent || "") ? p.accent : "#10233a";
+    win.document.write(`<!doctype html><html><head><title>${esc(p.name)} - ${size} welcome sign</title><style>@page{size:${size} portrait;margin:12mm}*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;color:#10233a;text-align:center}main{border:2px solid ${accent};border-radius:8mm;padding:8mm;overflow-wrap:anywhere}.brand{font-size:14pt;font-weight:bold;letter-spacing:2px;color:${accent}}h1{font-size:${size === "A4" ? 32 : 23}pt;margin:7mm 0}p{font-size:${size === "A4" ? 13 : 10}pt;line-height:1.5;white-space:pre-wrap}img{display:block;width:${size === "A4" ? 85 : 62}mm;margin:4mm auto}.link{font-size:9pt}.actions{padding:16px}button{padding:12px;cursor:pointer}@media print{.actions{display:none}}</style></head><body><div class="actions"><button onclick="window.print()">Print ${size} / Save as PDF</button><p>Choose ${size}, portrait, 100% scale, and turn off headers and footers.</p></div><main><div class="brand">GuestSetGo</div><h1>Welcome to ${esc(p.name)}</h1><p>${esc(welcome)}</p>${p.hostName ? `<p>Your host: <strong>${esc(p.hostName)}</strong></p>` : ""}<img src="${qr}" alt="Scan for your welcome guide"><h2>Scan for your welcome guide</h2><p>Wi-Fi · Arrival details · House tips · Local favourites</p><p class="link">${esc(link)}</p>${p.phone || p.whatsapp ? `<p>Need a hand? ${esc(p.phone || p.whatsapp)}</p>` : ""}</main></body></html>`);
+    win.document.close();
+  }
+  function downloadEmail() {
+    const base64 = text => { let binary = ""; for (const byte of new TextEncoder().encode(text)) binary += String.fromCharCode(byte); return btoa(binary); };
+    const wrap = text => text.match(/.{1,76}/g)?.join("\r\n") || "";
+    const boundary = `guestsetgo_${Date.now()}`;
+    const eml = [`To: ${recipient.replace(/[\r\n]/g, "")}`, `Subject: =?UTF-8?B?${base64(subject)}?=`, "MIME-Version: 1.0", "X-Unsent: 1", `Content-Type: multipart/mixed; boundary="${boundary}"`, "", `--${boundary}`, 'Content-Type: text/plain; charset="UTF-8"', "Content-Transfer-Encoding: base64", "", wrap(base64(body)), `--${boundary}`, 'Content-Type: image/png; name="welcome-guide-qr.png"', 'Content-Disposition: attachment; filename="welcome-guide-qr.png"', "Content-Transfer-Encoding: base64", "", wrap(qr.split(",")[1]), `--${boundary}--`, ""].join("\r\n");
+    const url = URL.createObjectURL(new Blob([eml], { type: "message/rfc822" }));
+    const a = document.createElement("a"); a.href = url; a.download = `${p.slug}-welcome-email.eml`; a.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
+  return <div className="listedit">
+    {!p.published && <p className="notice warn">This guidebook is a draft. Publish it before sending it to guests.</p>}
+    <h2>Send your guest their welcome guide</h2>
+    <label className="field"><span>Guest email (optional)</span><input type="email" value={recipient} onChange={e => setRecipient(e.target.value)} placeholder="guest@example.com" /></label>
+    <label className="field"><span>Welcome message for email and print</span><textarea rows={4} value={welcome} onChange={e => setWelcome(e.target.value)} /><small className="muted">Starts with your guide's welcome message. Changes here apply to this sharing session.</small></label>
+    <div className="btnrow">
+      <a className="btn solid small" href={`mailto:${encodeURIComponent(recipient)}?${query}`}>Open email app</a>
+      <a className="btn small" href={`https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(recipient)}&${query}`} target="_blank" rel="noopener noreferrer">Outlook</a>
+      <a className="btn small" href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(recipient)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`} target="_blank" rel="noopener noreferrer">Gmail</a>
+      <button type="button" className="btn small" onClick={() => copy(`Subject: ${subject}\n\n${body}`)}>Copy email</button>
+      <button type="button" className="btn small" disabled={!qr} onClick={downloadEmail}>Download email with QR attached</button>
     </div>
-  );
+    <p className="small muted">Review and send in your email app. Email buttons cannot attach images automatically: download the email draft for a compatible app, or attach the QR image below in Outlook or Gmail.</p>
+    <details><summary>Preview email</summary><div className="snippet"><b>{subject}</b>{"\n\n"}{body}</div></details>
+    <div className="field"><span>Guest guide link</span><div className="btnrow"><code style={{wordBreak:"break-all"}}>{link}</code><button type="button" className="btn small" onClick={() => copy(link)}>Copy link</button></div></div>
+    <h2>Print a welcome QR sign</h2>
+    <p className="small muted">Your property name, welcome message, host details and guide QR code, with GuestSetGo branding and your chosen colour.</p>
+    <div className="btnrow"><button type="button" className="btn solid small" disabled={!qr} onClick={() => printSign("A4")}>Print A4 sign</button><button type="button" className="btn small" disabled={!qr} onClick={() => printSign("A5")}>Print A5 sign</button>{qr && <a className="btn small" href={qr} download={`${p.slug}-qr.png`}>Download QR image</a>}</div>
+    <div className="qrsign">{qr && <img src={qr} alt={`QR code for the welcome guide at ${p.name}`} />}<b>Welcome to {p.name}</b><small>Scan for your welcome guide · GuestSetGo</small></div>
+    {status && <p role="status" className="small">{status}</p>}
+  </div>;
 }

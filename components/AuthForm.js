@@ -17,6 +17,12 @@ const MESSAGES = {
   "auth/weak-password": "Use at least 8 characters for your password.",
   "auth/invalid-email": "Check the email address.",
   "auth/popup-closed-by-user": "Google sign-in was closed before it finished.",
+  "auth/popup-blocked": "Your browser blocked the Google sign-in window. Allow pop-ups for GuestSetGo, or sign in with email.",
+  "auth/unauthorized-domain": "Google sign-in isn't enabled for this website address yet. Please use email sign-in while we fix it.",
+  "auth/operation-not-allowed": "Google sign-in isn't enabled yet. Please use email sign-in while we fix it.",
+  "auth/invalid-api-key": "Sign-in is temporarily unavailable because the website's authentication settings need updating.",
+  "auth/network-request-failed": "Couldn't reach the sign-in service. Check your connection and try again.",
+  "auth/cancelled-popup-request": "Another sign-in window is already open. Please finish signing in there.",
   "auth/too-many-requests": "Too many attempts. Wait a minute and try again.",
 };
 
@@ -24,7 +30,8 @@ export default function AuthForm({ mode }) {
   const signup = mode === "signup";
   const router = useRouter();
   const params = useSearchParams();
-  const next = params.get("next") || "/dashboard";
+  const requestedNext = params.get("next") || "/dashboard";
+  const next = requestedNext.startsWith("/") && !requestedNext.startsWith("//") && !requestedNext.includes("\\") ? requestedNext : "/dashboard";
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -38,7 +45,7 @@ export default function AuthForm({ mode }) {
   }, [user, router, next]);
 
   const fail = (e) => {
-    setError(MESSAGES[e?.code] || "Something went wrong. Please try again.");
+    setError(MESSAGES[e?.code] || `Sign-in couldn't complete${e?.code?.startsWith("auth/") ? ` (${e.code})` : ""}. Please try again.`);
     setBusy(false);
   };
 
@@ -58,7 +65,7 @@ export default function AuthForm({ mode }) {
   }
 
   async function google() {
-    setError(""); setBusy(true);
+    setError(""); setInfo(""); setBusy(true);
     try { await signInWithPopup(clientAuth(), new GoogleAuthProvider()); } catch (err) { fail(err); }
   }
 
@@ -74,7 +81,7 @@ export default function AuthForm({ mode }) {
   return (
     <div className="auth wrap">
       <form className="auth-card" onSubmit={submit} noValidate>
-        <Link href="/" className="logo"><span className="tagdot" aria-hidden="true" />GuestSetGo</Link>
+        <Link href="/" className="logo brand-logo auth-brand" aria-label="GuestSetGo home"><img src="/brand/guestsetgo-logo.png" alt="GuestSetGo" width={2172} height={724} /></Link>
         <h1 style={{ fontSize: "1.7rem" }}>{signup ? "Create your host account" : "Sign in"}</h1>
         <p className="muted">{signup ? "Set up your first guidebook in a few minutes." : "Manage your guidebooks, check-outs and billing."}</p>
         <button type="button" className="btn" onClick={google} disabled={busy}>Continue with Google</button>

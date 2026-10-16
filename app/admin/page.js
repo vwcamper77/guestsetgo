@@ -2,10 +2,12 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
+import AssistedRequests from "@/components/AssistedRequests";
+import VisitorAnalytics from "@/components/VisitorAnalytics";
 
 const gbp = (pence) => `£${((pence || 0) / 100).toLocaleString("en-GB", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 const day = (iso) => (iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" }) : "—");
-const TABS = [["overview", "Overview"], ["accounts", "Accounts"], ["guidebooks", "Guidebooks"], ["payments", "Payments"], ["places", "Local places"]];
+const TABS = [["overview", "Overview"], ["visitors", "Visitors"], ["accounts", "Accounts"], ["guidebooks", "Guidebooks"], ["assisted", "Assisted setup"], ["payments", "Payments"], ["places", "Local places"]];
 
 function csv(rows) {
   const esc = (v) => `"${String(v ?? "").replace(/"/g, '""')}"`;
@@ -21,6 +23,16 @@ export default function Admin() {
   const [busy, setBusy] = useState("");
 
   const load = useCallback(() => api("/api/admin/overview").then(setData).catch((e) => setError(e.message)), [api]);
+  async function downloadChecklistRequests() {
+    setBusy('checklist');
+    try {
+      const result = await api('/api/admin/checklist');
+      const safe = value => /^[=+@\-\t\r]/.test(String(value || '')) ? `'${value}` : value;
+      const rows = [['Email', 'Requested', 'Marketing opt-in', 'Consent date'], ...result.requests.map(item => [safe(item.email), item.requestedAt, item.marketingConsent === true ? 'Yes' : 'No', item.consentAt || ''])];
+      const url = URL.createObjectURL(new Blob([csv(rows)], { type: 'text/csv' }));
+      const link = document.createElement('a'); link.href = url; link.download = 'guestsetgo-checklist-requests.csv'; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+    } catch (err) { setError(err.message); } finally { setBusy(''); }
+  }
   useEffect(() => { load(); }, [load]);
 
   async function patchUser(uid, body) {
@@ -51,6 +63,7 @@ export default function Admin() {
   return (
     <>
       <div className="page-head">
+        <button className="btn small" type="button" disabled={busy === 'checklist'} onClick={downloadChecklistRequests}>Download checklist emails (CSV)</button>
         <div><span className="k">Admin</span><h1>GuestSetGo admin</h1></div>
         <div className="btnrow">
           <input type="text" aria-label="Search" placeholder="Search name or email" value={q} onChange={(e) => setQ(e.target.value)} style={{ width: 240 }} />
@@ -59,6 +72,8 @@ export default function Admin() {
       </div>
       {error && <p className="error">{error}</p>}
       <div className="tabs">{TABS.map(([id, l]) => <button key={id} type="button" className={tab === id ? "on" : ""} onClick={() => setTab(id)}>{l}</button>)}</div>
+      {tab === "assisted" && <AssistedRequests />}
+      {tab === "visitors" && <VisitorAnalytics />}
 
       {tab === "overview" && <>
         <div className="grid3">

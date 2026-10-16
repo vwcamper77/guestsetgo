@@ -10,6 +10,7 @@ export const POST = handle(async (req) => {
   const account = (await db().collection("users").doc(user.uid).get()).data() || {};
   if (!account.stripeCustomerId) throw new HttpError(400, "You haven't paid for a plan yet.");
   const base = process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
-  const session = await stripe().billingPortal.sessions.create({ customer: account.stripeCustomerId, return_url: `${base}/dashboard/billing` });
+  const configuration = account.plan === "agency" ? process.env.STRIPE_PORTAL_AGENCY : process.env.STRIPE_PORTAL_HOST;
+  const session = await stripe().billingPortal.sessions.create({ customer: account.stripeCustomerId, return_url: `${base}/dashboard/billing`, ...(configuration ? { configuration } : {}) });
   return ok({ url: session.url });
 });

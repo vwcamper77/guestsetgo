@@ -21,6 +21,7 @@ export default function FeedbackTab({ property }) {
 
   return (
     <div className="listedit">
+      <div className="notice"><b>{data.viewCount || 0} guide opens</b><p className="small">Editor previews are excluded. Opens are approximate and can include hosts opening the guest link; they do not measure unique guests or stays. {data.lastViewedAt ? `Last opened ${when(data.lastViewedAt)}.` : "Share your link before the next stay to start seeing activity."}</p></div>
       <h3>Check-outs</h3>
       {data.checkouts.length === 0 ? <p className="empty">No check-outs yet. When guests tap "I've checked out", they appear here with anything they flagged.</p> : (
         <div className="tbl"><table>

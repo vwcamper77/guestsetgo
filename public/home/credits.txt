@@ -1,0 +1,6 @@
+Lifestyle asset sources (downloaded and served locally):
+living-room.jpg: https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1400&q=85
+kitchen.jpg: https://images.unsplash.com/photo-1556912172-45b7abe8b7e1?auto=format&fit=crop&w=800&q=80
+cottage.jpg: https://images.unsplash.com/photo-1449158743715-0a90ebb6d2d8?auto=format&fit=crop&w=800&q=80
+thermostat.svg and hot-tub.svg: original fictional sample illustrations created for this redesign.
+These images depict sample settings, not customer properties.

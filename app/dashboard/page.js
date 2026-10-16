@@ -28,6 +28,11 @@ function Dashboard() {
       router.push(`/dashboard/properties/${d.id}`);
     } catch (err) { setError(err.message); setBusy(false); }
   }
+  async function duplicate(id) {
+    setBusy(true); setError("");
+    try { const d = await api(`/api/properties/${id}/duplicate`, { method: "POST" }); router.push(`/dashboard/properties/${d.id}`); }
+    catch (e) { setError(e.message); setBusy(false); }
+  }
 
   const live = items?.filter((i) => i.published).length || 0;
 
@@ -38,9 +43,10 @@ function Dashboard() {
         {me && <p className="small muted">{me.planLabel} · {live} of {me.allowance} live</p>}
       </div>
 
-      {params.get("checkout") === "success" && <p className="notice">Payment received. Your plan updates within a few seconds; refresh if it hasn't yet.</p>}
+      {params.get("checkout") === "success" && <p className="notice">Checkout completed. Your account updates after Stripe confirms payment.</p>}
+      {me?.account?.trialEndsAt && !me.account.subscriptionId && <p className="notice">Your free guest trial ends {new Date(me.account.trialEndsAt).toLocaleDateString("en-GB")}. To keep your QR-linked guide online afterwards, choose £6/month or £60/year per property. No automatic charge. <Link href="/dashboard/billing">View online guide plans</Link></p>}
       {me && me.allowance === 0 && (
-        <p className="notice warn">You can build and preview guidebooks for free. To put one live for guests, <Link href="/dashboard/billing">choose a plan</Link>.</p>
+        <p className="notice">Build free: add a property, fill in your details and add house photos with numbered markers. Converting an existing welcome folder is a separate £79 service. {me.account?.trialEndsAt || me.account?.starterPaidAt || me.account?.subscriptionStatus ? <Link href="/dashboard/billing">Choose hosting to keep your guides live.</Link> : "Publishing your first guide starts a 30-day guest trial. No card required."}</p>
       )}
 
       <form className="panel" onSubmit={create} noValidate>
@@ -64,9 +70,10 @@ function Dashboard() {
               </div>
               <h3>{p.name}</h3>
               {p.address && <p className="small muted">{p.address}</p>}
-              <p className="small muted">{p.checkoutCount} check-outs · {p.reviewCount} ratings</p>
+              <p className="small muted">{p.viewCount || 0} guide opens · {p.checkoutCount} check-outs · {p.reviewCount} ratings</p>
               <div className="btnrow">
                 <Link className="btn solid small" href={`/dashboard/properties/${p.id}`}>Edit</Link>
+                <button className="btn small" type="button" disabled={busy} onClick={() => duplicate(p.id)}>Duplicate as draft</button>
                 {p.published && <a className="btn small" href={`/g/${p.slug}`} target="_blank" rel="noopener noreferrer">Open guest page</a>}
               </div>
             </article>

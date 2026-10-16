@@ -12,15 +12,18 @@ Digital guest guidebooks for holiday lets. Hosts sign up, build a guidebook from
 | Sign in / sign up | `/login`, `/signup` | Email and password, or Google. Password reset. |
 | Host dashboard | `/dashboard` | List and create guidebooks, see what's live against the plan. |
 | Guidebook editor | `/dashboard/properties/[id]` | Every section, photo uploads with numbered dots, local picks with Google Maps walking routes, check-out tasks, QR code and door sign downloads, check-outs and ratings from guests. Live phone preview. |
-| Billing | `/dashboard/billing` | Choose Starter, Host or Agency; opens Stripe Checkout. Manage billing opens the Stripe portal. |
+| Billing | `/dashboard/billing` | Monthly/annual Host hosting, Agency hosting and optional assisted setup through Stripe Checkout. |
+| Folder conversion | Property > separate Welcome folder conversion page | £79 purchase required before document uploads or AI drafts. Converts folder pages, brochures and cards. House photos and markers remain in the normal editor, with laptop drag-and-drop. |
+| Adoption tools | Dashboard / property feedback | Duplicate as an offline draft; approximate guide-open counters exclude editor previews. |
 | Guest page | `/g/[slug]` | The live guidebook. Guests submit check-outs and rate local places without signing in. |
 | Admin | `/admin` | Revenue, accounts (founding and free toggles, notes), all guidebooks, payments, and every rated local place across the platform with CSV export. Only emails in `ADMIN_EMAILS`. |
 
 ### Plans
 
-- **Starter** — £79 one-off, one property for 12 months.
-- **Host** — £79 set-up per property + £6 a month per property. Founding hosts (tick in Admin) skip the set-up fee.
+- **Host** — £6/month or £60/year per property. No mandatory setup fee.
 - **Agency** — £4 a month per property, minimum 5.
+- **Assisted setup** — optional £79 once per property, converting one batch of up to eight supplied photos into a manual draft. Hosting is separate. Additional portfolio migration is quoted separately.
+- **Trial** — one property for 30 days, starting on first publication; no card or automatic renewal. Existing Starter purchases retain their original term.
 
 A guidebook can only be put live if the host's plan has room. If a subscription is cancelled or reduced, the newest guidebooks go offline automatically.
 
@@ -49,13 +52,13 @@ A guidebook can only be put live if the host's plan has room. If a subscription 
 1. In the Stripe dashboard (start in **Test mode**), copy the secret key.
 2. Create the products and prices:
    ```bash
-   STRIPE_SECRET_KEY=sk_test_... npm run stripe:setup
+   node --env-file=.env.local scripts/stripe-setup.mjs --write-env
    ```
-   It prints `STRIPE_PRICE_SETUP`, `STRIPE_PRICE_HOST_MONTHLY` and `STRIPE_PRICE_AGENCY_MONTHLY`, and creates the promotion code `FOUNDING10` (£79 off, 10 uses).
-3. **Developers > Webhooks > Add endpoint:** `https://guestsetgo.com/api/stripe/webhook` with these events:
-   `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
+   This creates monthly Host, annual Host, Agency and assisted prices plus separate billing portals. It saves IDs to `.env.local` without printing secrets. For live credentials add `--live`. Existing subscriptions and legacy Starter prices are retained. New checkouts do not accept legacy founding coupons.
+3. **Developers > Webhooks > Add endpoint:** `https://www.guestsetgo.com/api/stripe/webhook` with these events. Use the canonical `www` address directly: Stripe treats domain redirects as failed deliveries.
+   `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `invoice.paid`, `invoice.payment_failed`, `charge.refunded`.
    Copy the signing secret into `STRIPE_WEBHOOK_SECRET`.
-4. **Settings > Billing > Customer portal:** turn on updating payment methods, viewing invoices, cancelling, and **updating quantities** for the Host and Agency products.
+4. The catalog script configures separate billing portals: Host permits monthly/annual changes; Agency enforces a five-property minimum. Both allow invoices, payment methods and cancellation.
 5. When you're ready to take real money, repeat steps 1–3 in Live mode and swap the variables in Vercel.
 
 ### 3. Vercel (about 5 minutes)
@@ -90,3 +93,11 @@ To test webhooks locally: `stripe listen --forward-to localhost:3000/api/stripe/
 - `payments/{id}` — written by the Stripe webhook
 
 Photos live in Storage at `uploads/{uid}/{propertyId}/`.
+
+Assisted source photos are saved by the authenticated server under `private-imports/{uid}/{propertyId}/`; client Storage rules deny access. Admin uses 15-minute signed links. Request metadata lives at `properties/{id}/imports/assisted`. AI self-service imports send photos to OpenAI and do not persist originals. Set `OPENAI_API_KEY`; optionally set `OPENAI_IMPORT_MODEL` (defaults to the existing vision model, `gpt-4o-mini`). Ten conversions per account per UTC day are enforced in Firestore.
+
+Folder conversion requires a confirmed £79 purchase on the property before GET or POST access, including AI draft actions and admin preparation. Comp accounts and hosting subscriptions do not unlock it. Stripe returns purchasers to `/dashboard/properties/{id}/folder-conversion`. The ordinary House photos & instructions editor supports drag-and-drop, multiple photo cards and numbered markers without this purchase.
+
+Assisted fulfilment: Admin > Assisted setup > open photos > prepare the property draft offline > mark ready > contact the host by email. The host reviews and publishes. Customer email is manual.
+
+Run `node --test` for billing/import regression checks and `npm run build` for production compilation. Never use live cards for integration tests.

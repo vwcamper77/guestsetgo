@@ -18,6 +18,6 @@ export default async function GuestPage({ params }) {
   const prop = await liveProperty(params.slug);
   if (!prop) notFound();
   const ratings = await ratingsFor(prop.ref);
-  const { ownerUid, ...publicData } = prop.data;
+  const { ownerUid, assistancePaidAt, assistancePaymentId, ...publicData } = prop.data;
   return <Guidebook property={plain({ id: prop.id, ...publicData })} ratings={ratings} />;
 }

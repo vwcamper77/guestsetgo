@@ -3,6 +3,7 @@ import { FieldValue } from "firebase-admin/firestore";
 import { db } from "@/lib/firebase-admin";
 import { stripe, planForPrice } from "@/lib/stripe";
 import { allowance } from "@/lib/plans";
+import { subscriptionPeriodEnd, subscriptionWillCancel, invoiceSubscription } from "@/lib/billing.mjs";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -19,14 +20,19 @@ async function syncSubscription(sub) {
   const item = sub.items.data.find((i) => planForPrice(i.price.id)) || sub.items.data[0];
   const plan = planForPrice(item?.price?.id) || sub.metadata?.plan || null;
   const ended = ["canceled", "incomplete_expired"].includes(sub.status);
+  const previous = (await db().collection("users").doc(uid).get()).data() || {};
+  const invoice = !ended && sub.latest_invoice ? (typeof sub.latest_invoice === "string" ? await stripe().invoices.retrieve(sub.latest_invoice) : sub.latest_invoice) : null;
+  const paymentConfirmed = sub.status === "trialing" || invoice?.status === "paid" || (sub.status === "past_due" && previous.subscriptionId === sub.id && previous.subscriptionPaymentConfirmed === true);
   await db().collection("users").doc(uid).set({
     stripeCustomerId: sub.customer,
     subscriptionId: ended ? null : sub.id,
     subscriptionStatus: sub.status,
+    subscriptionPaymentConfirmed: !!paymentConfirmed,
     plan: ended ? null : plan,
     quantity: ended ? 0 : item?.quantity || 1,
-    currentPeriodEnd: sub.current_period_end ? new Date(sub.current_period_end * 1000) : null,
-    cancelAtPeriodEnd: !!sub.cancel_at_period_end,
+    billingInterval: item?.price?.recurring?.interval || "month",
+    currentPeriodEnd: subscriptionPeriodEnd(sub) ? new Date(subscriptionPeriodEnd(sub) * 1000) : null,
+    cancelAtPeriodEnd: subscriptionWillCancel(sub),
     updatedAt: FieldValue.serverTimestamp(),
   }, { merge: true });
 
@@ -59,15 +65,24 @@ export async function POST(req) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed": {
+      case "checkout.session.completed":
+      case "checkout.session.async_payment_succeeded": {
         const s = event.data.object;
         const uid = s.client_reference_id || s.metadata?.uid;
         if (!uid) break;
         const ref = db().collection("users").doc(uid);
         await ref.set({ stripeCustomerId: s.customer }, { merge: true });
         if (s.mode === "payment" && s.metadata?.plan === "starter" && s.payment_status === "paid") {
-          await ref.set({ starterPaidAt: new Date(), starterCredits: parseInt(s.metadata.quantity, 10) || 1 }, { merge: true });
+          await ref.set({ starterPaidAt: new Date(s.created * 1000), starterCredits: parseInt(s.metadata.quantity, 10) || 1 }, { merge: true });
           await logPayment({ id: s.payment_intent || s.id, uid, customer: s.customer, amount: s.amount_total, currency: s.currency, description: "Starter set-up", status: "paid", type: "one-off", created: event.created });
+        }
+        if (s.mode === "payment" && s.metadata?.plan === "assisted" && s.payment_status === "paid") {
+          const propertyRef = db().collection("properties").doc(s.metadata.propertyId);
+          const property = await propertyRef.get();
+          if (property.exists && property.data().ownerUid === uid) {
+            await propertyRef.set({ assistancePaidAt: new Date(s.created * 1000), assistancePaymentId: s.payment_intent || s.id }, { merge: true });
+          }
+          await logPayment({ id: s.payment_intent || s.id, uid, customer: s.customer, amount: s.amount_total, currency: s.currency, description: "Assisted photo-to-manual setup", status: "paid", type: "assisted", created: s.created });
         }
         if (s.mode === "subscription" && s.subscription) {
           await syncSubscription(await stripe().subscriptions.retrieve(s.subscription));
@@ -77,18 +92,20 @@ export async function POST(req) {
       case "customer.subscription.created":
       case "customer.subscription.updated":
       case "customer.subscription.deleted":
-        await syncSubscription(event.data.object);
+        await syncSubscription(await stripe().subscriptions.retrieve(event.data.object.id));
         break;
       case "invoice.paid":
       case "invoice.payment_failed": {
         const inv = event.data.object;
-        if (!inv.subscription) break; // one-off payments are logged at checkout
+        const subscription = invoiceSubscription(inv);
+        if (!subscription) break; // one-off payments are logged at checkout
         const uid = await uidForCustomer(inv.customer, inv.subscription_details?.metadata?.uid);
         await logPayment({
-          id: inv.id, uid, customer: inv.customer, amount: inv.amount_paid || inv.amount_due, currency: inv.currency,
+          id: inv.id, uid, customer: inv.customer, amount: event.type === "invoice.paid" ? inv.amount_paid : inv.amount_due, currency: inv.currency,
           description: inv.lines?.data?.map((l) => l.description).filter(Boolean).join(", ") || "Subscription",
           status: event.type === "invoice.paid" ? "paid" : "failed", type: "subscription", created: inv.created,
         });
+        await syncSubscription(await stripe().subscriptions.retrieve(subscription));
         break;
       }
       case "charge.refunded": {

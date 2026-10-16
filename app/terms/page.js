@@ -11,13 +11,17 @@ export default function Terms() {
       <p className="muted small">Last updated {updated}. This is a plain-English summary, not reviewed by a lawyer — if you need a compliance-checked terms page, have this read over before relying on it.</p>
 
       <h2>What GuestSetGo is</h2>
-      <p>GuestSetGo is a self-service tool for building digital guest guidebooks for holiday lets. You build and edit your own guidebook; we provide the software, hosting and QR code.</p>
+      <p>GuestSetGo helps hosts build digital guest guidebooks for holiday lets. House-photo uploads and numbered instructions are part of the editor. Welcome folder conversion is a separate £79 purchase per property; document uploads, AI conversion and preparation help unlock after payment. You review converted information before publishing.</p>
 
       <h2>Your account</h2>
       <p>You're responsible for the accuracy of what you put in your guidebook (Wi-Fi details, check-in steps, local recommendations) and for keeping your login secure. You must be the host or authorised to manage the property you add.</p>
 
       <h2>Plans and billing</h2>
-      <p>Starter is a one-off payment covering one property for 12 months. Host and Agency are subscriptions billed monthly per property, which you can cancel at any time from Billing. Prices shown on the pricing page are for display; the amount actually charged is set up in Stripe and may change with notice.</p>
+      <p>Host costs £6 per property per month or £60 per property per year. Agency costs £4 per property per month with a minimum of five properties (£20 per month). There is no mandatory setup fee. Subscriptions renew at the chosen interval until cancelled. Existing Starter purchases retain their original 12-month term.</p>
+      <p>Your first guidebook publication starts a 30-day trial for one property. No payment card is required and the trial does not automatically charge or renew. Hosting is needed after it ends.</p>
+      <h2>Photo conversion and assisted setup</h2>
+      <p>AI photo conversion produces drafts and can misread text or omit details. You must check accuracy, conflicting instructions, brochure opening hours and prices before publishing. Only upload material you are authorised to use, without guest personal data or access codes.</p>
+      <p>Assisted setup costs £79 once per property and covers conversion of one batch of up to eight supplied photos into a draft manual for your approval. Hosting is separate. Larger portfolio migrations are quoted separately. Contact hello@guestsetgo.com about changes, delivery timing, cancellation or refunds for assisted work; your applicable statutory rights remain unaffected.</p>
 
       <h2>Cancelling</h2>
       <p>Cancel a subscription any time; it stays active until the end of the period you've already paid for, then stops renewing. A Starter guidebook stays live for the 12 months you paid for and isn't auto-renewed.</p>

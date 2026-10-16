@@ -1,6 +1,7 @@
 // Creates the GuestSetGo Stripe webhook endpoint and prints the signing secret to copy.
 // Usage: STRIPE_SECRET_KEY=sk_live_... npm run stripe:webhook
 import Stripe from "stripe";
+import { readFileSync, writeFileSync } from "node:fs";
 
 const key = process.env.STRIPE_SECRET_KEY;
 if (!key) {
@@ -9,9 +10,10 @@ if (!key) {
 }
 const stripe = new Stripe(key);
 
-const url = process.env.WEBHOOK_URL || "https://guestsetgo.com/api/stripe/webhook";
+const url = process.env.WEBHOOK_URL || "https://www.guestsetgo.com/api/stripe/webhook";
 const events = [
   "checkout.session.completed",
+  "checkout.session.async_payment_succeeded",
   "customer.subscription.created",
   "customer.subscription.updated",
   "customer.subscription.deleted",
@@ -21,11 +23,13 @@ const events = [
 ];
 
 const existing = await stripe.webhookEndpoints.list({ limit: 100 });
-const already = existing.data.find((e) => e.url === url);
+// Reuse the original endpoint when moving to the canonical domain, retaining its
+// signing secret so production does not lose payment notifications during repair.
+const already = existing.data.find((e) => e.url === url) ||
+  (url === "https://www.guestsetgo.com/api/stripe/webhook" && existing.data.find((e) => e.url === "https://guestsetgo.com/api/stripe/webhook"));
 if (already) {
-  console.log(`\nA webhook endpoint for ${url} already exists (id: ${already.id}).`);
-  console.log("Its signing secret is only shown once, at creation time, so it can't be re-printed here.");
-  console.log("Delete it in the Stripe dashboard first if you need a fresh secret, then re-run this script.\n");
+  await stripe.webhookEndpoints.update(already.id, { url, enabled_events: already.enabled_events.includes("*") ? ["*"] : [...new Set([...already.enabled_events, ...events])] });
+  console.log("Updated existing webhook URL and events; signing secret retained.");
   process.exit(0);
 }
 
@@ -37,4 +41,9 @@ const endpoint = await stripe.webhookEndpoints.create({
 
 console.log("\nWebhook endpoint created:", endpoint.id);
 console.log("\nAdd this to Vercel (and .env.local):\n");
-console.log(`STRIPE_WEBHOOK_SECRET=${endpoint.secret}\n`);
+if (process.argv.includes("--write-env")) {
+  let env = readFileSync(".env.local", "utf8");
+  env = /^STRIPE_WEBHOOK_SECRET=.*$/m.test(env) ? env.replace(/^STRIPE_WEBHOOK_SECRET=.*$/m, `STRIPE_WEBHOOK_SECRET=${endpoint.secret}`) : `${env.trimEnd()}\nSTRIPE_WEBHOOK_SECRET=${endpoint.secret}\n`;
+  writeFileSync(".env.local", env);
+  console.log("Signing secret saved to .env.local (not printed).");
+} else console.log(`STRIPE_WEBHOOK_SECRET=${endpoint.secret}\n`);

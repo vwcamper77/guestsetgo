@@ -1,0 +1,12 @@
+.git
+.claude
+.agents
+.codex
+.playwright-cli
+.playwright-mcp
+.env*
+service-account*.json
+node_modules
+.next
+output
+*.log

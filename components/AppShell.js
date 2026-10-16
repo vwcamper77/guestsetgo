@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useAuth } from "./AuthProvider";
 import RequireAuth from "./RequireAuth";
+import ReleaseNotice from "./ReleaseNotice";
 
 function Nav() {
   const { user, api, logout } = useAuth();
@@ -18,7 +19,7 @@ function Nav() {
   return (
     <header className="appbar">
       <div className="wrap appbar-in">
-        <Link href="/" className="logo"><span className="tagdot" aria-hidden="true" />GuestSetGo</Link>
+        <Link href="/" className="logo brand-logo app-brand" aria-label="GuestSetGo home"><img src="/brand/guestsetgo-logo.png" alt="GuestSetGo" width={2172} height={724} /></Link>
         <nav className="applinks">
           {link("/dashboard", "Guidebooks")}
           {link("/dashboard/billing", "Billing")}
@@ -37,6 +38,7 @@ export default function AppShell({ children }) {
   return (
     <RequireAuth>
       <Nav />
+      <ReleaseNotice />
       <main className="wrap app-main">{children}</main>
     </RequireAuth>
   );

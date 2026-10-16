@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { waNumber } from "@/lib/slug";
+import ArrivalDirections from "./ArrivalDirections";
+import { arrivalDestination } from "@/lib/arrival.mjs";
 
 const mapsLink = (origin, dest) =>
-  `https://www.google.com/maps/dir/?api=1&origin=${encodeURIComponent(origin || "")}&destination=${encodeURIComponent(dest || "")}&travelmode=walking`;
+  `https://www.google.com/maps/dir/?api=1${origin?.trim() ? `&origin=${encodeURIComponent(origin.trim())}` : ""}&destination=${encodeURIComponent(dest.trim())}&travelmode=walking`;
 
 function Stars({ value }) {
   const r = Math.round(value);
@@ -82,11 +84,14 @@ function Pick({ p, origin, slug, stats, preview }) {
       <div className="meta"><span>{p.type}</span>{p.mins > 0 && <span>{p.mins} min walk</span>}</div>
       <h3>{p.name}</h3>
       {p.desc && <p className="muted small">{p.desc}</p>}
-      {(p.steps?.length > 0 || p.dest) && (
-        <details className="acc"><summary>Walking route from the door</summary>
+      {p.dest?.trim() && <div className="route">
+        <a className="btn solid" href={mapsLink(origin, p.dest)} target="_blank" rel="noopener noreferrer" aria-label={`Walking directions to ${p.name} in Google Maps`}>Walking directions in Google Maps ↗</a>
+        <p className="small muted">{origin?.trim() ? "From your holiday home to this local pick." : "Choose your starting point in Google Maps."}</p>
+      </div>}
+      {p.steps?.length > 0 && (
+        <details className="acc"><summary>Step-by-step walking directions</summary>
           <div className="route">
             {p.steps?.length > 0 && <ol>{p.steps.map((s, i) => <li key={i}>{s}</li>)}</ol>}
-            {p.dest && <a className="btn solid small" href={mapsLink(origin, p.dest)} target="_blank" rel="noopener noreferrer">Open walking route in Google Maps</a>}
           </div>
         </details>
       )}
@@ -162,36 +167,40 @@ function Checkout({ property, preview }) {
 }
 
 export default function Guidebook({ property: p, ratings = {}, preview = false }) {
+  useEffect(() => {
+    if (preview || !p.slug) return;
+    fetch(`/api/public/${encodeURIComponent(p.slug)}/view`, { method: "POST" }).catch(() => {});
+  }, [p.slug, preview]);
   const wa = waNumber(p.whatsapp);
   const style = p.accent ? { "--gb-accent": p.accent } : undefined;
   const has = {
-    wifi: p.wifiName || p.wifiPassword,
-    howto: p.photoGuides?.length || p.houseInfo?.some((h) => h.title && h.body),
-    parking: p.parking?.some((r) => r.value) || p.parkingNote,
-    local: p.picks?.length,
-    leave: p.checkoutTasks?.length,
+    find: !!(arrivalDestination(p) || p.arrivalLandmark || p.landmarkSteps?.length || p.what3words),
+    wifi: !!(p.wifiName || p.wifiPassword),
+    howto: !!(p.photoGuides?.length || p.houseInfo?.some((h) => h.title && h.body)),
+    parking: !!(p.parking?.some((r) => r.value) || p.parkingNote),
+    local: !!p.picks?.length,
+    leave: !!p.checkoutTasks?.length,
   };
-  const tabs = [["arrive", "Arrive"], has.wifi && ["wifi", "Wi-Fi"], has.howto && ["howto", "How-to"], has.parking && ["parking", "Parking"], has.local && ["local", "Local picks"], has.leave && ["leave", "Check-out"], ["help", "Help"]].filter(Boolean);
+  const tabs = [has.find && ["find", "Find us"], ["arrive", "Arrive"], has.wifi && ["wifi", "Wi-Fi"], has.howto && ["howto", "How-to"], has.parking && ["parking", "Parking"], has.local && ["local", "Local picks"], has.leave && ["leave", "Check-out"], ["help", "Help"]].filter(Boolean);
 
   return (
     <div className="gb" style={style}>
-      <header className="gb-hero">
+      <header className={`gb-hero${p.propertyPhoto?.img ? " gb-hero-with-photo" : ""}`}>
         <div className="gwrap">
+          <div className="gb-welcome-copy">
           <small>Welcome to</small>
           <h1>{p.name}</h1>
           {p.address && <p className="addr">{p.address}</p>}
-          {(p.hostName || p.intro) && (
-            <div className="gb-host">
-              <div className="gb-avatar" aria-hidden="true">{(p.hostName || "H").charAt(0).toUpperCase()}</div>
-              <p className="small">{p.hostName ? `Hi, I'm ${p.hostName}. ` : ""}{p.intro}</p>
-            </div>
-          )}
+          </div>
+          {p.propertyPhoto?.img && <figure className="gb-property-photo"><a href={p.propertyPhoto.img} target="_blank" rel="noopener noreferrer" aria-label={`View a larger photo of ${p.name || "the property"}`}><img src={p.propertyPhoto.img} alt={p.propertyPhoto.alt || `Front of ${p.name || "the property"}`} width="640" height="480" fetchpriority="high" decoding="async" /></a><figcaption>Front of the property</figcaption></figure>}
+          {p.intro && <p className="gb-welcome-note">{p.hostName && <><b>{p.hostName}, your host:</b>{" "}</>}{p.intro}</p>}
         </div>
       </header>
 
       <nav className="gb-tabs" aria-label="Guidebook sections"><div className="gwrap">{tabs.map(([id, label]) => <a key={id} href={`#${id}`}>{label}</a>)}</div></nav>
 
       <main className="gwrap gb-main">
+        {has.find && <section className="gcard" id="find"><span className="k">Find us</span><h2>Find your way here</h2><ArrivalDirections property={p} /></section>}
         <section className="gcard" id="arrive">
           <span className="k">Arrive</span><h2>Getting in</h2>
           <div className="facts">
@@ -232,8 +241,8 @@ export default function Guidebook({ property: p, ratings = {}, preview = false }
         {has.local && (
           <section className="gcard" id="local">
             <span className="k">Explore</span><h2>{p.hostName ? `${p.hostName}'s local picks` : "Local picks"}</h2>
-            <p className="muted small">Every pick has a walking route from the door. Been somewhere? Leave a quick rating for the next guests.</p>
-            {p.picks.map((pk) => <Pick key={pk.id} p={pk} origin={p.origin || p.address} slug={p.slug} stats={ratings[pk.id]} preview={preview} />)}
+            <p className="muted small">Look for the Google Maps button on each place to open walking directions. Been somewhere? Leave a quick rating for the next guests.</p>
+            {p.picks.map((pk) => <Pick key={pk.id} p={pk} origin={p.origin?.trim() || arrivalDestination(p)} slug={p.slug} stats={ratings[pk.id]} preview={preview} />)}
           </section>
         )}
 
@@ -254,7 +263,7 @@ export default function Guidebook({ property: p, ratings = {}, preview = false }
           </div>
         </section>
       </main>
-      <footer className="gb-foot">Guidebook by <b>GuestSetGo</b></footer>
+      <footer className="gb-foot"><span>Guidebook by</span><a href="/" className="logo brand-logo guest-brand" aria-label="GuestSetGo home"><img src="/brand/guestsetgo-logo.png" alt="GuestSetGo" width={2172} height={724} /></a></footer>
     </div>
   );
 }

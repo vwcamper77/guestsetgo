@@ -8,3 +8,4 @@ out
 *.log
 service-account*.json
 .DS_Store
+.env*

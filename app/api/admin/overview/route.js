@@ -24,7 +24,7 @@ export const GET = handle(async (req) => {
   let mrr = 0;
   const users = usersSnap.docs.map((d) => {
     const u = d.data();
-    if (u.plan && ACTIVE.includes(u.subscriptionStatus) && !u.comp) mrr += (MONTHLY_PENCE[u.plan] || 0) * (u.quantity || 1);
+    if (u.plan && u.subscriptionStatus === "active" && u.subscriptionPaymentConfirmed !== false && !u.comp) mrr += (u.plan === "host" && u.billingInterval === "year" ? 500 : MONTHLY_PENCE[u.plan] || 0) * (u.quantity || 1);
     const mine = props.filter((p) => p.ownerUid === d.id);
     return plain({
       uid: d.id, email: u.email, name: u.name, createdAt: u.createdAt, plan: u.plan, quantity: u.quantity || 0,

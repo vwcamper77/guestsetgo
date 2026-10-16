@@ -12,7 +12,7 @@ export const GET = handle(async (req) => {
   const items = snap.docs
     .map((d) => {
       const p = d.data();
-      return plain({ id: d.id, name: p.name, slug: p.slug, address: p.address, published: !!p.published, updatedAt: p.updatedAt, checkoutCount: p.checkoutCount || 0, reviewCount: p.reviewCount || 0 });
+      return plain({ id: d.id, name: p.name, slug: p.slug, address: p.address, published: !!p.published, updatedAt: p.updatedAt, viewCount: p.viewCount || 0, checkoutCount: p.checkoutCount || 0, reviewCount: p.reviewCount || 0 });
     })
     .sort((a, b) => String(b.updatedAt || "").localeCompare(String(a.updatedAt || "")));
   return ok({ items });
