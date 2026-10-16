@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { ref as sref, uploadBytes, getDownloadURL, deleteObject } from "firebase/storage";
 import { clientAuth, clientStorage } from "@/lib/firebase-client";
+import { useAuth } from "@/components/AuthProvider";
 import { StringList, uid } from "./editors";
 
 const IDEAS = ["Watch Netflix on the TV", "If the power goes off", "Dishwasher and tablets", "Bins out night", "Heating and hot water", "Washing machine"];
@@ -19,8 +20,24 @@ async function shrink(file) {
 }
 
 function GuideEditor({ g, propertyId, onChange, onRemove }) {
+  const { api } = useAuth();
   const [status, setStatus] = useState("");
+  const [note, setNote] = useState("");
+  const [aiStatus, setAiStatus] = useState("");
+  const [aiBusy, setAiBusy] = useState(false);
   const set = (patch) => onChange({ ...g, ...patch });
+
+  async function suggest() {
+    setAiBusy(true); setAiStatus("");
+    try {
+      const d = await api(`/api/properties/${propertyId}/ai-photo-guide`, { method: "POST", body: { imageUrl: g.img, note } });
+      set({ title: d.title || g.title, area: d.area || g.area, steps: d.steps?.length ? d.steps : g.steps });
+      setAiStatus("Drafted from the photo — check it over and edit anything that's not quite right.");
+    } catch (e) {
+      setAiStatus(e.message);
+    }
+    setAiBusy(false);
+  }
 
   async function upload(file) {
     if (!file) return;
@@ -65,6 +82,16 @@ function GuideEditor({ g, propertyId, onChange, onRemove }) {
         </div>
       ) : <div className="photo placeholder">No photo yet</div>}
       {status && <p className="small muted">{status}</p>}
+      {g.img && (
+        <div className="field" style={{ background: "var(--bg)", padding: 10, borderRadius: 10 }}>
+          <span>AI assist (optional)</span>
+          <div className="btnrow" style={{ flexWrap: "nowrap" }}>
+            <input type="text" value={note} onChange={(e) => setNote(e.target.value)} placeholder="One-line note, e.g. black remote, press the red NETFLIX button" style={{ flex: 1, minWidth: 0 }} />
+            <button type="button" className="btn small" onClick={suggest} disabled={aiBusy}>{aiBusy ? "Thinking…" : "✨ Draft title & steps"}</button>
+          </div>
+          {aiStatus && <small className="muted">{aiStatus}</small>}
+        </div>
+      )}
       {(g.pins || []).length > 0 && (
         <div className="field"><span>Dots</span>
           <div className="listedit">
