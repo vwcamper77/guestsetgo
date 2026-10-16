@@ -227,6 +227,7 @@ details.acc .acc-body{color:var(--muted);padding-bottom:12px;white-space:pre-lin
   .prices,.grid3{grid-template-columns:1fr}
 }
 @media (max-width:560px){
+  .doorsign{left:-8px}
   .contents,.steps4,.grid2{grid-template-columns:1fr}
   .navlinks a.hide-sm{display:none}
   .sec{padding-block:56px}
