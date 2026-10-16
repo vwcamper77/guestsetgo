@@ -20,6 +20,13 @@ const STEPS = [
   ["Change it any time", "New code, new bin day, new favourite pub? Edit it and it's live straight away."],
 ];
 
+const FAQS = [
+  ["Do you set it up for me, or do I do it myself?", "It's self-service. You sign up and fill in your own Wi-Fi, check-in steps, photos and local picks from your phone or laptop, usually in under an hour. There's no app to install and no technical skill needed."],
+  ["Can I edit it after it's live?", "Yes, any time, as often as you like. Changes go live the moment you save, no re-printing or re-sending the QR code."],
+  ["What happens if I cancel or don't renew?", "On a monthly plan, cancel any time from Billing and your guidebooks stop being served to guests at the end of the paid period. On the one-off Starter plan, the guidebook stays live for the 12 months you've paid for."],
+  ["Do my guests need an app or account?", "No. They scan the QR code or open the link and the guidebook opens straight in their phone's browser. Nothing to download, nothing to sign in to."],
+];
+
 export default async function Home() {
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://guestsetgo.com";
   const sampleUrl = new URL("/demo.html", siteUrl).toString();
@@ -32,6 +39,7 @@ export default async function Home() {
           <div className="navlinks">
             <a className="hide-sm" href="/demo.html">See a sample</a>
             <a className="hide-sm" href="#pricing">Pricing</a>
+            <a className="hide-sm" href="#faq">FAQ</a>
             <Link href="/login">Sign in</Link>
             <Link className="btn solid small" href="/signup">Get started</Link>
           </div>
@@ -98,11 +106,32 @@ export default async function Home() {
               </div>
             ))}
           </div>
-          <p className="notice" style={{ marginTop: 24 }}><b>Founding hosts offer:</b> the first 10 Kent properties get set-up free. Email hello@guestsetgo.com before you sign up.</p>
+          <div className="notice" style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+            <span><b>Founding hosts offer:</b> the first 10 Kent properties get the Starter set-up fee waived.</span>
+            <a className="btn solid small" href="mailto:hello@guestsetgo.com?subject=Founding%20host%20offer&body=Property%20address%2Farea%3A%0AKent%20town%3A">Claim founding host pricing →</a>
+          </div>
         </div>
       </section>
 
-      <div className="wrap"><footer className="site-foot"><span>© {new Date().getFullYear()} GuestSetGo · Folkestone, Kent · hello@guestsetgo.com</span><Link href="/login">Host sign in</Link></footer></div>
+      <section className="sec" id="faq">
+        <div className="wrap">
+          <div className="sec-head"><span className="eyebrow">Questions</span><h2>Good to know.</h2></div>
+          <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
+            {FAQS.map(([q, a]) => <details className="acc" key={q}><summary>{q}</summary><div className="acc-body">{a}</div></details>)}
+          </div>
+        </div>
+      </section>
+
+      <div className="wrap">
+        <footer className="site-foot">
+          <span>© {new Date().getFullYear()} GuestSetGo · Folkestone, Kent · hello@guestsetgo.com</span>
+          <span className="btnrow" style={{ gap: 14 }}>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
+            <Link href="/login">Host sign in</Link>
+          </span>
+        </footer>
+      </div>
     </>
   );
 }
