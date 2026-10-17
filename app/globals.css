@@ -269,16 +269,28 @@ details.acc .acc-body{color:var(--muted);padding-bottom:12px;white-space:pre-lin
 .arrival-waypoints li>div{min-width:0}
 .arrival-waypoints li p{font-size:.9rem;color:var(--muted)}
 
-/* A recognisable front-of-property photo, kept whole rather than cropped. */
-.gb-hero-with-photo>.gwrap{max-width:720px;display:grid;grid-template-columns:minmax(0,1fr) 160px;align-items:center;gap:10px 24px}
+/* A shallow property-photo crop with the full image available inside the guide. */
+.gb-hero-with-photo>.gwrap{max-width:800px;display:grid;grid-template-columns:minmax(0,1fr) 280px;align-items:center;gap:10px 24px}
 .gb-welcome-copy{min-width:0;overflow-wrap:anywhere}
 .gb-property-photo{margin:0;min-width:0}
-.gb-property-photo img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:contain;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);border-radius:9px}
-.gb-property-photo figcaption{font-size:.68rem;line-height:1.3;margin-top:5px;opacity:.95}
+.gb-property-photo-button{display:block;width:100%;border:0;padding:0;background:transparent;cursor:zoom-in;border-radius:9px}
+.gb-property-photo img{display:block;width:100%;height:auto;aspect-ratio:2.4/1;object-fit:cover;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.3);border-radius:9px}
+.gb-property-photo figcaption{font-size:.72rem;line-height:1.3;margin-top:5px;opacity:.95}
 .gb-welcome-note{grid-column:1/-1;font-size:.85rem;line-height:1.5;max-width:600px;margin-top:6px}
 .property-photo-editor{display:grid;gap:12px;padding-block:16px 22px;margin-bottom:16px;border-bottom:1px solid var(--line)}
 .property-photo-editor h2{font-size:1.3rem}
 .property-photo-preview{display:block;width:min(100%,440px);height:auto;aspect-ratio:4/3;object-fit:contain;background:var(--bg);border-radius:12px;border:1px solid var(--line)}
-@media(max-width:560px){.gb-hero-with-photo>.gwrap{grid-template-columns:minmax(0,1fr) 96px;gap:8px 12px}.gb-hero h1{font-size:1.5rem}}
+@media(max-width:560px){.gb-hero-with-photo>.gwrap{grid-template-columns:minmax(0,1fr);gap:10px}.gb-property-photo{grid-row:1}.gb-property-photo img{aspect-ratio:2.7/1;max-height:150px}.gb-welcome-copy{grid-row:2}.gb-hero h1{font-size:1.5rem}}
 /* A phone-sized preview needs the mobile header even on a desktop screen. */
-@container guest-guide (max-width:560px){.gb-hero-with-photo>.gwrap{grid-template-columns:minmax(0,1fr) 96px;gap:8px 12px}.gb-hero h1{font-size:1.5rem}}
+@container guest-guide (max-width:560px){.gb-hero-with-photo>.gwrap{grid-template-columns:minmax(0,1fr);gap:10px}.gb-property-photo{grid-row:1}.gb-property-photo img{aspect-ratio:2.7/1;max-height:150px}.gb-welcome-copy{grid-row:2}.gb-hero h1{font-size:1.5rem}}
+.preview-frame .gb-hero-with-photo>.gwrap{grid-template-columns:minmax(0,1fr);gap:10px}
+.preview-frame .gb-property-photo{grid-row:1}
+.preview-frame .gb-property-photo img{aspect-ratio:2.7/1;max-height:150px}
+.preview-frame .gb-welcome-copy{grid-row:2}
+.preview-frame .gb-hero h1{font-size:1.5rem}
+.gb-photo-dialog{position:fixed;max-width:min(960px,94vw);max-height:92dvh;width:94vw;border:0;padding:0;border-radius:14px;background:var(--surface);color:var(--ink);overflow:auto;box-shadow:0 20px 80px #0006}
+.gb-photo-dialog::backdrop{background:rgba(5,18,26,.78)}
+.gb-photo-dialog-content{padding:16px;display:grid;gap:12px}
+.gb-photo-dialog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px}
+.gb-photo-dialog img{display:block;width:100%;height:auto;max-height:72dvh;object-fit:contain}
+.gb-photo-dialog p{font-size:.9rem}

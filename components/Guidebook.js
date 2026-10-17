@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { waNumber } from "@/lib/slug";
 import ArrivalDirections from "./ArrivalDirections";
 import { arrivalDestination } from "@/lib/arrival.mjs";
@@ -10,6 +10,18 @@ const mapsLink = (origin, dest) =>
 function Stars({ value }) {
   const r = Math.round(value);
   return <span className="stars" aria-label={`${value.toFixed(1)} out of 5`}>{"★".repeat(r)}<span className="off">{"★".repeat(5 - r)}</span></span>;
+}
+
+function PropertyPhoto({ property }) {
+  const dialog = useRef(null);
+  const photo = property.propertyPhoto;
+  const description = photo.alt || `Front of ${property.name || "the property"}`;
+  return <>
+    <figure className="gb-property-photo"><button type="button" className="gb-property-photo-button" aria-label={`Enlarge photo of ${property.name || "the property"}`} aria-haspopup="dialog" onClick={() => dialog.current?.showModal()}><img src={photo.img} alt={description} width="640" height="480" fetchpriority="high" decoding="async" /></button><figcaption>Front of the property · tap to enlarge</figcaption></figure>
+    <dialog ref={dialog} className="gb-photo-dialog" aria-label={`Property photo: ${property.name || "your holiday home"}`} onClick={event => { if (event.target === event.currentTarget) dialog.current.close(); }}>
+      <div className="gb-photo-dialog-content"><div className="gb-photo-dialog-toolbar"><b>{property.name || "Front of the property"}</b><button type="button" className="btn small" onClick={() => dialog.current.close()} autoFocus>Close ×</button></div><img src={photo.img} alt={description} width="1280" height="960" decoding="async" /><p>{description}</p></div>
+    </dialog>
+  </>;
 }
 
 function CopyButton({ text }) {
@@ -192,7 +204,7 @@ export default function Guidebook({ property: p, ratings = {}, preview = false }
           <h1>{p.name}</h1>
           {p.address && <p className="addr">{p.address}</p>}
           </div>
-          {p.propertyPhoto?.img && <figure className="gb-property-photo"><a href={p.propertyPhoto.img} target="_blank" rel="noopener noreferrer" aria-label={`View a larger photo of ${p.name || "the property"}`}><img src={p.propertyPhoto.img} alt={p.propertyPhoto.alt || `Front of ${p.name || "the property"}`} width="640" height="480" fetchpriority="high" decoding="async" /></a><figcaption>Front of the property</figcaption></figure>}
+          {p.propertyPhoto?.img && <PropertyPhoto property={p} />}
           {p.intro && <p className="gb-welcome-note">{p.hostName && <><b>{p.hostName}, your host:</b>{" "}</>}{p.intro}</p>}
         </div>
       </header>
