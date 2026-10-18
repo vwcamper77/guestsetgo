@@ -294,3 +294,7 @@ details.acc .acc-body{color:var(--muted);padding-bottom:12px;white-space:pre-lin
 .gb-photo-dialog-toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px}
 .gb-photo-dialog img{display:block;width:100%;height:auto;max-height:72dvh;object-fit:contain}
 .gb-photo-dialog p{font-size:.9rem}
+
+.currency-choice { display: inline-flex; align-items: center; margin-bottom: 1rem; }
+.currency-choice select { font: inherit; padding: .5rem .75rem; border: 1px solid currentColor; border-radius: .5rem; background: white; color: #10233a; }
+.visually-hidden { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

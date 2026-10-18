@@ -1,4 +1,6 @@
 "use client";
+import { LocalisedText } from "./LocalizedPricing";
+
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthProvider";
@@ -63,7 +65,7 @@ export default function FolderConversion({ property, onApply, onDraftReady }) {
     onApply(patch); onDraftReady(); setResult(null);
     setMessage("Selected content added to your editor. Review it in the other tabs, then Save. Nothing has been published by this import.");
   }
-  if (!property.assistancePaidAt) return <div className="notice"><h2>Welcome folder conversion</h2><p>£79 once per property. Convert the pages in your existing welcome folder, brochures and business cards into a guidebook draft. Uploads and AI conversion unlock after payment.</p><Link className="btn solid" href={`/dashboard/billing?plan=assisted&property=${encodeURIComponent(property.id)}`}>Unlock folder conversion — £79 once</Link></div>;
+  if (!property.assistancePaidAt) return <div className="notice"><h2>Welcome folder conversion</h2><p><LocalisedText text="£79 once per property. Convert the pages in your existing welcome folder, brochures and business cards into a guidebook draft. Uploads and AI conversion unlock after payment." /></p><Link className="btn solid" href={`/dashboard/billing?plan=assisted&property=${encodeURIComponent(property.id)}`}><LocalisedText text="Unlock folder conversion — £79 once" /></Link></div>;
   return <div className="listedit">
     <div><span className="k">Paid setup service · unlocked</span><h2>Convert your welcome folder</h2>
       <p>Your welcome folder, handwritten notes, brochures and business cards are a useful starting point. Take clear photos, one page or card per photo, including both sides if needed.</p></div>
@@ -71,7 +73,7 @@ export default function FolderConversion({ property, onApply, onDraftReady }) {
     <p className="small muted">Leave guest personal details and door codes out of photos. Photos used for AI drafts are sent to our AI provider; originals are saved privately only when you submit an assisted request.</p>
     {photos.length > 0 && <div className="import-photos">{photos.map((photo, index) => <div key={`${photo.name}-${index}`}><img src={photo.data} alt={`Photo ${index + 1}: ${photo.name}`} /><button className="btn small" disabled={!!busy} type="button" onClick={() => { setPhotos((p) => p.filter((_, i) => i !== index)); setResult(null); }}>Remove photo {index + 1}</button></div>)}</div>}
     <label className="field"><span>Anything we should know?</span><textarea maxLength={2000} value={note} disabled={!!busy} onChange={(e) => { setNote(e.target.value); setResult(null); }} placeholder="e.g. The restaurant on card 2 has moved. The handwritten page replaces the printed checkout instructions." /></label>
-    <div className="notice"><b>Your £79 folder-conversion purchase includes AI draft conversion and preparation help.</b> You choose what to add and check the result. Brochure prices, opening hours and instructions can be out of date.</div>
+    <div className="notice"><b>Your folder-conversion purchase includes AI draft conversion and preparation help.</b> You choose what to add and check the result. Brochure prices, opening hours and instructions can be out of date.</div>
     <div className="btnrow"><button className="btn solid" disabled={!!busy || !photos.length} type="button" onClick={() => convert("draft")}>{busy === "draft" ? "Reading your photos…" : "Create a draft from photos"}</button></div>
     {result && <section className="import-review" aria-label="Review imported draft">
       <h3>Choose what to add</h3><p className="small">Lists are appended to your existing content. Selected text fields replace their current value. Existing rules and lists remain until you edit them.</p>
@@ -84,7 +86,7 @@ export default function FolderConversion({ property, onApply, onDraftReady }) {
     <section className="notice"><h3>Ask us to prepare your folder draft</h3><p>Preparation help is included in your paid conversion service. Send your folder pages and we'll prepare the manual for you to review. Hosting is separate.</p>
       {request ? <><p role="status">Assisted setup: <b>{request.status}</b>. {request.status === "completed" ? "Your draft is ready in the editor. Review it before publishing." : "Our team will contact you by email."}</p>{isAdmin && <button type="button" className="btn" disabled={!!busy} onClick={() => convert("draft_assisted")}>{busy === "draft_assisted" ? "Reading submitted photos…" : "Prepare AI draft from submitted photos"}</button>}</>
         : property.assistancePaidAt ? <button type="button" className="btn" disabled={!!busy || !photos.length} onClick={() => convert("assisted")}>{busy === "assisted" ? "Submitting photos…" : "Send photos for assisted setup (already paid)"}</button>
-          : <Link className="btn" href={`/dashboard/billing?plan=assisted&property=${encodeURIComponent(property.id)}`}>Choose assisted setup — £79 once</Link>}
+          : <Link className="btn" href={`/dashboard/billing?plan=assisted&property=${encodeURIComponent(property.id)}`}><LocalisedText text="Choose assisted setup — £79 once" /></Link>}
     </section>
     {busy === "photos" && <p role="status">Preparing your photos…</p>}
     {error && <p className="error" role="alert">{error}</p>}

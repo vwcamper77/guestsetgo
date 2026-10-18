@@ -1,18 +1,21 @@
 "use client";
-import { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useRef, useState } from "react";
 import { normaliseCurrency } from "@/lib/currency.mjs";
 
-const CurrencyContext = createContext({ currency: "GBP", setCurrency: () => {} });
+const CurrencyContext = createContext({ currency: "GBP", setCurrency: () => {}, ready: false });
 const STORAGE_KEY = "guestsetgo-preferred-currency";
 
 export function CurrencyProvider({ children }) {
   const [currency, updateCurrency] = useState("GBP");
+  const [ready, setReady] = useState(false);
+  const manuallyChosen = useRef(false);
   useEffect(() => {
     let active = true;
     try {
       const saved = window.localStorage.getItem(STORAGE_KEY);
       if (saved === "GBP" || saved === "USD") {
         updateCurrency(saved);
+        setReady(true);
         return () => { active = false; };
       }
     } catch (_) { /* Private browsing can disable storage. */ }
@@ -20,18 +23,21 @@ export function CurrencyProvider({ children }) {
     fetch("/api/visitor-currency", { cache: "no-store" })
       .then((response) => response.ok ? response.json() : null)
       .then((result) => {
-        if (active && result?.currency) updateCurrency(normaliseCurrency(result.currency));
+        if (active && !manuallyChosen.current && result?.currency) updateCurrency(normaliseCurrency(result.currency));
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => { if (active) setReady(true); });
     return () => { active = false; };
   }, []);
 
   function setCurrency(next) {
+    manuallyChosen.current = true;
+    setReady(true);
     const chosen = normaliseCurrency(next);
     updateCurrency(chosen);
     try { window.localStorage.setItem(STORAGE_KEY, chosen); } catch (_) {}
   }
-  return <CurrencyContext.Provider value={{ currency, setCurrency }}>{children}</CurrencyContext.Provider>;
+  return <CurrencyContext.Provider value={{ currency, setCurrency, ready }}>{children}</CurrencyContext.Provider>;
 }
 
 export function useCurrency() {
