@@ -3,12 +3,15 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useAuth } from "@/components/AuthProvider";
+import { useCurrency } from "@/components/CurrencyProvider";
+import { localisePrices, money, priceBook } from "@/lib/currency.mjs";
 import { PLANS, ASSISTED } from "@/lib/plans";
 
 const date = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 function Billing() {
   const { api } = useAuth();
   const params = useSearchParams();
+  const preference = useCurrency();
   const [me, setMe] = useState(null);
   const [items, setItems] = useState([]);
   const [qty, setQty] = useState({ host: 1, agency: 5 });
@@ -17,7 +20,7 @@ function Billing() {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const load = useCallback(async () => {
-    try { const [account, properties] = await Promise.all([api("/api/me"), api("/api/properties")]); setMe(account); setItems(properties.items); }
+    try { const [account, properties] = await Promise.all([api("/api/me?billing=1"), api("/api/properties")]); setMe(account); setItems(properties.items); }
     catch (e) { setError(e.message); }
   }, [api]);
   useEffect(() => { load(); }, [load]);
@@ -29,7 +32,7 @@ function Billing() {
   }, [params, load]);
   async function go(plan) {
     setBusy(plan); setError("");
-    try { const d = await api("/api/stripe/checkout", { method: "POST", body: { plan, quantity: qty[plan] || 1, interval: plan === "host" ? interval : "month", propertyId } }); window.location.href = d.url; }
+    try { const d = await api("/api/stripe/checkout", { method: "POST", body: { plan, quantity: qty[plan] || 1, interval: plan === "host" ? interval : "month", propertyId, currency } }); window.location.href = d.url; }
     catch (e) { setError(e.message); setBusy(""); }
   }
   async function portal() {
@@ -38,9 +41,15 @@ function Billing() {
     catch (e) { setError(e.message); setBusy(""); }
   }
   const a = me?.account || {};
+  const currency = a.billingCurrency || preference.currency;
+  const prices = priceBook(currency);
+  const text = (value) => localisePrices(value, currency);
+  const format = (value) => money(value, currency);
   const hasSub = !!a.subscriptionId && !["canceled", "incomplete_expired"].includes(a.subscriptionStatus);
   return <>
     <div className="page-head"><div><span className="k">Billing</span><h1>Your online guide subscription</h1></div></div>
+    <label className="field"><span>Billing currency</span><select aria-label="Billing currency" value={currency} disabled={!me || !!a.billingCurrency} onChange={(event) => preference.setCurrency(event.target.value)}><option value="GBP">GBP £</option><option value="USD">USD $</option></select></label>
+    {a.billingCurrency && <p className="small">Your billing account uses {a.billingCurrency}. Existing subscriptions keep their currency and renewal price.</p>}
     {params.get("checkout") === "cancelled" && <p className="notice">Checkout cancelled. No purchase was completed.</p>}
     {params.get("checkout") === "success" && <p className="notice" role="status">Checkout completed. Your account updates after Stripe confirms payment; this page checks for updates automatically.</p>}
     {error && <p className="error" role="alert">{error}</p>}
@@ -54,19 +63,19 @@ function Billing() {
       {a.starterPaidAt && <p className="small">Existing Starter purchase: {a.starterCredits || 1} guidebook(s), 12 months from {date(a.starterPaidAt)}. Your purchase is still honoured.</p>}
       {a.stripeCustomerId && <button className="btn small" type="button" onClick={portal} disabled={!!busy}>Manage billing, invoices and cards</button>}
     </div>
-    <p>Hosting keeps your guest guide accessible through its QR code and web link. Build and preview free, then try one live guide for 30 days with no card. After the trial, choose £6/month or £60/year per property, or Agency for five or more properties. Without an active plan, guests cannot open the guide after the trial.</p>
+    <p>{text("Hosting keeps your guest guide accessible through its QR code and web link. Build and preview free, then try one live guide for 30 days with no card. After the trial, choose £6/month or £60/year per property, or Agency for five or more properties. Without an active plan, guests cannot open the guide after the trial.")}</p>
     <div className="grid2">{Object.values(PLANS).map((plan) => <div className={`ticket ${params.get("plan") === plan.id ? "feature" : ""}`} key={plan.id}>
-      <h2>{plan.name}</h2><div className="amount" style={{ fontSize: "1.4rem" }}>{plan.id === "host" && interval === "year" ? "£60 per property / year" : plan.price}</div><p>{plan.summary}</p>
-      <ul>{plan.features.map((f) => <li key={f}>{f}</li>)}</ul>
-      {plan.id === "host" && <label className="field"><span>Billing frequency</span><select value={interval} onChange={(e) => setInterval(e.target.value)}><option value="month">Monthly — £6/property</option><option value="year">Yearly — £60/property (save £12)</option></select></label>}
+      <h2>{plan.name}</h2><div className="amount" style={{ fontSize: "1.4rem" }}>{plan.id === "host" && interval === "year" ? text("£60 per property / year") : text(plan.price)}</div><p>{text(plan.summary)}</p>
+      <ul>{plan.features.map((f) => <li key={f}>{text(f)}</li>)}</ul>
+      {plan.id === "host" && <label className="field"><span>Billing frequency</span><select value={interval} onChange={(e) => setInterval(e.target.value)}><option value="month">{text("Monthly — £6/property")}</option><option value="year">{text("Yearly — £60/property (save £12)")}</option></select></label>}
       <label className="field"><span>Properties</span><input type="number" min={plan.minQuantity || 1} max={500} value={qty[plan.id]} onChange={(e) => setQty((q) => ({ ...q, [plan.id]: e.target.value }))} /></label>
-      {Number(qty[plan.id]) >= (plan.minQuantity || 1) && <p><b>Total: £{(Number(qty[plan.id]) * (plan.id === "agency" ? 4 : interval === "year" ? 60 : 6)).toLocaleString("en-GB")}{plan.id === "host" && interval === "year" ? " paid upfront each year" : " each month"}</b>. Renews until cancelled.</p>}
-      <button className="btn solid" type="button" disabled={!!busy || hasSub || !me} onClick={() => go(plan.id)}>{busy === plan.id ? "Opening checkout…" : hasSub ? "Change in Manage billing" : `Choose ${plan.name}`}</button>
+      {Number(qty[plan.id]) >= (plan.minQuantity || 1) && <p><b>Total: {format(Number(qty[plan.id]) * (plan.id === "agency" ? prices.agencyMonthly : interval === "year" ? prices.hostAnnual : prices.hostMonthly))}{plan.id === "host" && interval === "year" ? " paid upfront each year" : " each month"}</b>. Renews until cancelled.</p>}
+      <button className="btn solid" type="button" disabled={!!busy || hasSub || !me || !preference.ready} onClick={() => go(plan.id)}>{busy === plan.id ? "Opening checkout…" : hasSub ? "Change in Manage billing" : `Choose ${plan.name}`}</button>
     </div>)}</div>
-    <div className="conversion-offer" id="assisted"><span className="k">Optional one-time service · not a hosting plan</span><h2>Welcome folder conversion</h2><div className="amount">{ASSISTED.price}</div><p>{ASSISTED.description}</p><p><b>Example for one property:</b> £79 conversion + £60 annual hosting = <b>£139 in the first year</b>, then £60/year hosting until cancelled. Alternatively pay £6/month for hosting.</p><p>After payment, your property's separate Welcome folder conversion page unlocks. Drag in photos of your existing guidebook pages, brochures and cards. Includes conversion of one batch of up to eight photos, AI draft conversion and preparation help.</p>
+    <div className="conversion-offer" id="assisted"><span className="k">Optional one-time service · not a hosting plan</span><h2>Welcome folder conversion</h2><div className="amount">{text(ASSISTED.price)}</div><p>{text(ASSISTED.description)}</p><p><b>Example for one property:</b> {format(prices.assisted)} conversion + {format(prices.hostAnnual)} annual hosting = <b>{format(prices.assisted + prices.hostAnnual)} in the first year</b>, then {format(prices.hostAnnual)}/year hosting until cancelled. Alternatively pay {format(prices.hostMonthly)}/month for hosting.</p><p>After payment, your property's separate Welcome folder conversion page unlocks. Drag in photos of your existing guidebook pages, brochures and cards. Includes conversion of one batch of up to eight photos, AI draft conversion and preparation help.</p>
       {items.length ? <><label className="field"><span>Property to prepare</span><select value={propertyId} onChange={(e) => setPropertyId(e.target.value)}><option value="">Choose a property</option>{items.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></label>
-        <button className="btn solid" type="button" disabled={!!busy || !propertyId || !me} onClick={() => go("assisted")}>{busy === "assisted" ? "Opening checkout…" : "Buy folder conversion — £79 once"}</button></> : <Link className="btn" href="/dashboard">Add a property first</Link>}
-      <p className="small muted">House photos and numbered markers are included with hosting. Welcome folder conversion, its document uploads and AI conversion require this separate £79 purchase. Portfolio migration beyond this scope is quoted separately.</p>
+        <button className="btn solid" type="button" disabled={!!busy || !propertyId || !me || !preference.ready} onClick={() => go("assisted")}>{busy === "assisted" ? "Opening checkout…" : text("Buy folder conversion — £79 once")}</button></> : <Link className="btn" href="/dashboard">Add a property first</Link>}
+      <p className="small muted">House photos and numbered markers are included with hosting. Welcome folder conversion, its document uploads and AI conversion require this separate {format(prices.assisted)} purchase. Portfolio migration beyond this scope is quoted separately.</p>
     </div>
     <p className="small muted">Stripe handles payments. Hosting renews at the selected interval until cancelled. Assisted setup is a separate one-time purchase and does not add hosting capacity.</p>
   </>;

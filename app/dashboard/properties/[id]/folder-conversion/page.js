@@ -25,7 +25,7 @@ export default function Page({ params }) {
     try { const d = await api(`/api/properties/${params.id}`, { method: "PUT", body: { ...property, published: false } }); setProperty(d.property); setDirty(false); setMessage("Draft saved. Return to the guidebook editor to check each section and publish when ready."); }
     catch (e) { setError(e.message); } finally { setBusy(false); }
   }
-  return <><div className="page-head"><div><Link href={`/dashboard/properties/${params.id}`}>← Back to guidebook editor</Link><h1>Welcome folder conversion</h1><p className="muted">{property?.name} · Separate setup service · £79 once</p></div></div>
+  return <><div className="page-head"><div><Link href={`/dashboard/properties/${params.id}`}>← Back to guidebook editor</Link><h1>Welcome folder conversion</h1><p className="muted">{property?.name} · Separate setup service</p></div></div>
     {error && <p className="error" role="alert">{error}</p>}
     {!property ? <p>Loading…</p> : <div className="panel">
       {property.published && property.assistancePaidAt && <p className="notice warn">This guidebook is live. Take it offline in the editor before applying converted content, so you can review the draft privately.</p>}

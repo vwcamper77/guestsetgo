@@ -30,6 +30,7 @@ async function syncSubscription(sub) {
     subscriptionPaymentConfirmed: !!paymentConfirmed,
     plan: ended ? null : plan,
     quantity: ended ? 0 : item?.quantity || 1,
+    billingCurrency: sub.currency?.toUpperCase() || item?.price?.currency?.toUpperCase() || "GBP",
     billingInterval: item?.price?.recurring?.interval || "month",
     currentPeriodEnd: subscriptionPeriodEnd(sub) ? new Date(subscriptionPeriodEnd(sub) * 1000) : null,
     cancelAtPeriodEnd: subscriptionWillCancel(sub),
@@ -72,6 +73,7 @@ export async function POST(req) {
         if (!uid) break;
         const ref = db().collection("users").doc(uid);
         await ref.set({ stripeCustomerId: s.customer }, { merge: true });
+        if (s.payment_status === "paid" && s.currency) await ref.set({ billingCurrency: s.currency.toUpperCase() }, { merge: true });
         if (s.mode === "payment" && s.metadata?.plan === "starter" && s.payment_status === "paid") {
           await ref.set({ starterPaidAt: new Date(s.created * 1000), starterCredits: parseInt(s.metadata.quantity, 10) || 1 }, { merge: true });
           await logPayment({ id: s.payment_intent || s.id, uid, customer: s.customer, amount: s.amount_total, currency: s.currency, description: "Starter set-up", status: "paid", type: "one-off", created: event.created });
@@ -80,7 +82,7 @@ export async function POST(req) {
           const propertyRef = db().collection("properties").doc(s.metadata.propertyId);
           const property = await propertyRef.get();
           if (property.exists && property.data().ownerUid === uid) {
-            await propertyRef.set({ assistancePaidAt: new Date(s.created * 1000), assistancePaymentId: s.payment_intent || s.id }, { merge: true });
+            await propertyRef.set({ assistancePaidAt: new Date(s.created * 1000), assistancePaymentId: s.payment_intent || s.id, assistanceCurrency: s.currency?.toUpperCase() || "GBP" }, { merge: true });
           }
           await logPayment({ id: s.payment_intent || s.id, uid, customer: s.customer, amount: s.amount_total, currency: s.currency, description: "Assisted photo-to-manual setup", status: "paid", type: "assisted", created: s.created });
         }
