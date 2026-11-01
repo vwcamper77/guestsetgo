@@ -1,6 +1,7 @@
 import { Bricolage_Grotesque, Atkinson_Hyperlegible, JetBrains_Mono } from "next/font/google";
 import { AuthProvider } from "@/components/AuthProvider";
 import VisitorTracker from "@/components/VisitorTracker";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { publicSiteUrl } from "@/lib/site-url.mjs";
 import "./globals.css";
 import "./editorial.css";
@@ -23,7 +24,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-GB" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
-        <AuthProvider><VisitorTracker />{children}</AuthProvider>
+        <AuthProvider><VisitorTracker /><GoogleAnalytics />{children}</AuthProvider>
       </body>
     </html>
   );
