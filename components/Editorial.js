@@ -7,6 +7,7 @@ export function EditorialFooter() {
     <div><Link className="logo" href="/">GuestSetGo</Link><p className="small muted">Thoughtful guides. More confident guests.<br />Folkestone, Kent · <a href="mailto:hello@guestsetgo.com">hello@guestsetgo.com</a></p><SocialActions instagramUrl={process.env.NEXT_PUBLIC_INSTAGRAM_URL || 'https://www.instagram.com/myguestsetgo/'} facebookUrl={process.env.NEXT_PUBLIC_FACEBOOK_URL || 'https://www.facebook.com/guestsetgo/'} siteUrl={process.env.NEXT_PUBLIC_SITE_URL} /></div>
     <nav aria-label="Compare guest guide options"><h2>Compare your options</h2><Link href="/vs">All comparisons</Link>{comparisons.map(c => <Link key={c.slug} href={`/vs/${c.slug}`}>{c.name}</Link>)}</nav>
     <nav aria-label="Hosting resources"><h2>For thoughtful hosts</h2><Link href="/blog">Hosting journal</Link><Link href="/blog/diy-holiday-let-welcome-book">Make your own welcome book</Link><Link href="/blog/convert-welcome-folder-to-digital-guide">Convert your welcome folder</Link><Link href="/about">Gavin’s hosting experience</Link><Link href="/#pricing">Pricing</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></nav>
+    <nav aria-label="Also from GMBF Ventures" style={{display:"flex",flexWrap:"wrap",gap:12}}><a href="https://gmbfventures.co.uk/">GMBF Ventures</a><a href="https://socialmediareminder.com/">Social Media Reminder</a><a href="https://www.snagsort.com/">SnagSort</a></nav>
   </footer>;
 }
 
