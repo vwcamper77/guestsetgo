@@ -1,6 +1,7 @@
 import Link from "next/link";
 import QRCode from "qrcode";
-import { PLANS, ASSISTED } from "@/lib/plans";
+import { CurrencySelect } from "@/components/CurrencyProvider";
+import { LandingPricing, PricingFaqs } from "@/components/LocalizedPricing";
 import { EditorialFooter } from "@/components/Editorial";
 import HomePreview from "@/components/HomePreview";
 import "./home.css";
@@ -78,19 +79,8 @@ export default async function Home() {
       <section className="band sec" id="pricing">
         <div className="wrap">
           <div className="sec-head"><span className="eyebrow">Online guide subscriptions</span><h2>Keep your guest guide online.</h2><p>Hosting means your guests can open your guide using its QR code or web link. Build it yourself for free, then try one live guide for 30 days with no card. After the trial, an online guide subscription is required. The trial never charges automatically.</p></div>
-          <div className="grid2">
-            {Object.values(PLANS).map((pl) => (
-              <div className={`ticket ${pl.id === "host" ? "feature" : ""}`} key={pl.id}>
-                {pl.id === "host" && <span className="flag">Most hosts</span>}
-                <h3>{pl.name}</h3>
-                <div className="amount">{pl.price}</div>
-                <p>{pl.summary}</p>
-                <ul>{pl.features.map((f) => <li key={f}>{f}</li>)}</ul>
-                <Link className={`btn ${pl.id === "host" ? "solid" : ""}`} href={`/signup?next=${encodeURIComponent(`/dashboard/billing?plan=${pl.id}`)}`}>Choose {pl.name}</Link>
-              </div>
-            ))}
-          </div>
-          <aside className="conversion-offer" aria-label="Optional welcome folder conversion"><span className="k">Optional one-time service · not a hosting plan</span><h3>Welcome folder conversion</h3><div className="amount">{ASSISTED.price}</div><p>{ASSISTED.description}</p><p><b>One-property example:</b> £79 conversion + £60 annual hosting = <b>£139 for the first year</b>. Hosting then renews at £60/year until cancelled. Or choose £6/month hosting. Build the guide yourself and you only pay for hosting after your trial.</p><ul><li>Document uploads unlock only after the £79 payment</li><li>One batch of up to eight folder-page, brochure or card photos</li><li>AI conversion and preparation help; you approve the draft</li></ul><div><Link className="btn" href="/signup?next=%2Fdashboard">Choose optional folder conversion</Link></div></aside>
+          <CurrencySelect />
+          <LandingPricing />
           <div className="notice" style={{ marginTop: 24, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
             <span><b>Based in Folkestone, built for local hosts.</b> Create your own guide with house photos and local tips, or buy the optional folder-conversion service.</span>
             <Link className="btn solid small" href="/signup">Create my guidebook →</Link>
@@ -102,7 +92,7 @@ export default async function Home() {
         <div className="wrap">
           <div className="sec-head"><span className="eyebrow">Questions</span><h2>Good to know.</h2></div>
           <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
-            {FAQS.map(([q, a]) => <details className="acc" key={q}><summary>{q}</summary><div className="acc-body">{a}</div></details>)}
+            <PricingFaqs faqs={FAQS} />
           </div>
         </div>
       </section>

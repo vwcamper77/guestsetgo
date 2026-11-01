@@ -10,7 +10,7 @@ export const maxDuration = 120;
 export const GET = handle(async (req, { params }) => {
   const user = await requireUser(req);
   const { ref, data: property } = await requireProperty(user, params.id);
-  if (!property.assistancePaidAt) throw new HttpError(402, "Purchase welcome folder conversion (£79 once) for this property first.");
+  if (!property.assistancePaidAt) throw new HttpError(402, "Purchase welcome folder conversion for this property first.");
   const request = await ref.collection("imports").doc("assisted").get();
   if (!request.exists) return ok({ request: null });
   const data = request.data();
@@ -20,7 +20,7 @@ export const GET = handle(async (req, { params }) => {
 export const POST = handle(async (req, { params }) => {
   const user = await requireUser(req);
   const { ref, data: property } = await requireProperty(user, params.id);
-  if (!property.assistancePaidAt) throw new HttpError(402, "Purchase welcome folder conversion (£79 once) for this property first.");
+  if (!property.assistancePaidAt) throw new HttpError(402, "Purchase welcome folder conversion for this property first.");
   if (Number(req.headers.get("content-length")) > 3200000) throw new HttpError(413, "Import fewer photos at a time.");
   const raw = await req.text();
   if (raw.length > 3200000) throw new HttpError(413, "Import fewer photos at a time.");

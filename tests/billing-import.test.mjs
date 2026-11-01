@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { checkoutSelection, subscriptionPeriodEnd, subscriptionWillCancel, invoiceSubscription } from "../lib/billing.mjs";
+import { checkoutSelection, stripeCurrency, assertCheckoutPrice, subscriptionPeriodEnd, subscriptionWillCancel, invoiceSubscription } from "../lib/billing.mjs";
 import { validateImages, importableFields, mergeImport, IMPORT_PROMPT } from "../lib/manual-import.mjs";
 import { arrivalValidation } from "../lib/arrival.mjs";
 
@@ -19,7 +19,7 @@ class HttpError extends Error { constructor(status, message) { super(message); t
 const png = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lL8AAAAASUVORK5CYII=";
 
 test("monthly/annual checkout has only the selected recurring price; assisted is one-time", () => {
-  assert.deepEqual(checkoutSelection({ plan: "host", quantity: 2, interval: "year" }, env), { plan: "host", quantity: 2, interval: "year", price: "price_annual", mode: "subscription" });
+  assert.deepEqual(checkoutSelection({ plan: "host", quantity: 2, interval: "year" }, env), { plan: "host", quantity: 2, interval: "year", price: "price_annual", currency: "GBP", mode: "subscription" });
   assert.equal(checkoutSelection({ plan: "host" }, env).price, "price_host");
   assert.equal(checkoutSelection({ plan: "assisted", quantity: 99 }, env).quantity, 1);
   assert.equal(checkoutSelection({ plan: "assisted" }, env).mode, "payment");
@@ -76,8 +76,8 @@ test("actual checkout handler does not attach a setup fee or accept legacy coupo
     const route = await moduleFromFile("../app/api/stripe/checkout/route.js", {
       db: () => ({ collection: () => ({ doc: () => ({ get: async () => ({ data: () => account }) }) }) }),
       handle: (fn) => fn, ok: (data) => data, requireUser: async () => ({ uid: "host1", email: "host@example.invalid" }),
-      requireProperty: async () => ({ data: { ownerUid: "host1" } }), HttpError, checkoutSelection,
-      randomBytes: () => Buffer.alloc(8), stripe: () => ({ checkout: { sessions: { create: async (params) => { captured = params; return { url: "https://checkout.stripe.com/test" }; } } } }),
+      requireProperty: async () => ({ data: { ownerUid: "host1" } }), HttpError, checkoutSelection, stripeCurrency, assertCheckoutPrice,
+      randomBytes: () => Buffer.alloc(8), stripe: () => ({ customers: { retrieve: async () => ({ currency: "gbp" }) }, prices: { retrieve: async (id) => ({ active: true, currency: "gbp", unit_amount: id === "price_assisted" ? 7900 : id === "price_annual" ? 6000 : 600, recurring: id === "price_assisted" ? null : { interval: id === "price_annual" ? "year" : "month", interval_count: 1 } }) }, checkout: { sessions: { create: async (params) => { captured = params; return { url: "https://checkout.stripe.com/test" }; } } } }),
     });
     const request = (body) => new Request("http://localhost/api/stripe/checkout", { method: "POST", body: JSON.stringify(body) });
     await route.POST(request({ plan: "host", interval: "year", quantity: 2 }));
