@@ -3,7 +3,7 @@ import Link from "next/link";
 export const metadata = { title: "Privacy policy" };
 
 export default function Privacy() {
-  const updated = "16 October 2026";
+  const updated = "1 November 2026";
   return (
     <div className="wrap narrow sec">
       <Link href="/" className="logo"><span className="tagdot" aria-hidden="true" />GuestSetGo</Link>
@@ -18,6 +18,7 @@ export default function Privacy() {
       <p><b>From guests:</b> nothing is required to open a guidebook. If a guest submits a check-out form or rates a local recommendation, we store what they type and the time it was submitted. We don't ask guests to sign in or create an account.</p>
 
       <h2>How we use it</h2>
+      <p>If you accept optional analytics cookies, Google Analytics measures visits to our public website using browser identifiers. We do not enable it on private account or guest guide pages. You can reject analytics or change your choice using Cookie preferences. We honour Do Not Track and Global Privacy Control. Our separate aggregate visitor counts do not require these cookies.</p>
       <p>If you request the free hosting checklist, we store your email address and request date in Firebase to record your request. If you separately choose hosting tips and product news, we also record that choice and its wording. Downloading the checklist does not require marketing consent. Ask us to unsubscribe you or delete your checklist request by emailing hello@guestsetgo.com.</p>
       <p>We count public page views by UTC day, page and referring website to understand site usage. We do not store cookies, IP addresses, visitor identities, query strings or full referring URLs for these statistics. Guidebook visits are grouped together without storing the guidebook link. We honour browser Do Not Track and Global Privacy Control signals. These aggregate counts are visible only to administrators.</p>
       <p>To run the guidebook you've built, send you check-out reports and ratings, process payment and billing, and respond if you contact us for support. We don't sell host or guest data, and we don't use it for advertising.</p>

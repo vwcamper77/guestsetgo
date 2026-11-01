@@ -2,6 +2,7 @@ import { Bricolage_Grotesque, Atkinson_Hyperlegible, JetBrains_Mono } from "next
 import { AuthProvider } from "@/components/AuthProvider";
 import { CurrencyProvider } from "@/components/CurrencyProvider";
 import VisitorTracker from "@/components/VisitorTracker";
+import GoogleAnalytics from "@/components/GoogleAnalytics";
 import { publicSiteUrl } from "@/lib/site-url.mjs";
 import "./globals.css";
 import "./editorial.css";
@@ -24,7 +25,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="en-GB" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body>
-        <AuthProvider><CurrencyProvider><VisitorTracker />{children}</CurrencyProvider></AuthProvider>
+        <AuthProvider><CurrencyProvider><VisitorTracker /><GoogleAnalytics />{children}</CurrencyProvider></AuthProvider>
       </body>
     </html>
   );
