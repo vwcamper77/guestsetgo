@@ -39,6 +39,8 @@ test("billing renders selected totals, annual savings and locked legacy GBP acco
       "@/components/AuthProvider": { useAuth: () => ({ api: () => {} }) },
       "@/components/CurrencyProvider": { useCurrency: () => ({ currency: preference, ready: true }) },
       "@/lib/currency.mjs": currencyLib, "@/lib/plans": plans,
+      "@/lib/analytics-events.mjs": { beginCheckoutEvent: () => null },
+      "@/components/google-analytics-client": { trackEvent: () => {} },
     });
     const html = renderToStaticMarkup(React.createElement(mod.default));
     const usd = (billingCurrency || preference) === "USD";

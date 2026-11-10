@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import AuthForm from "@/components/AuthForm";
 
-export const metadata = { title: "Sign in" };
+export const metadata = { title: "Sign in", robots: { index: false, follow: false } };
 
 export default function Page() {
   return <Suspense fallback={<div className="page-loading">Loading…</div>}><AuthForm mode="login" /></Suspense>;

@@ -1,35 +1,27 @@
 "use client";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { ANALYTICS_CONSENT_KEY, GA_MEASUREMENT_ID, isPublicAnalyticsPath } from "@/lib/analytics-events.mjs";
+import { sendPublicPageView } from "@/components/google-analytics-client";
 
-const id = "G-90N6XYYYF2";
-const key = "guestsetgo-analytics-consent";
+const id = GA_MEASUREMENT_ID;
+const key = ANALYTICS_CONSENT_KEY;
 
 export default function GoogleAnalytics() {
   const pathname = usePathname();
   const [choice, setChoice] = useState("loading");
   const [open, setOpen] = useState(false);
-  const publicPage = !/^\/(admin|dashboard|api|login|signup|g)(\/|$)/.test(pathname || "/");
+  const publicPage = isPublicAnalyticsPath(pathname || "/");
   useEffect(() => {
     if (navigator.doNotTrack === "1" || navigator.globalPrivacyControl) { setChoice("blocked"); return; }
     try { setChoice(localStorage.getItem(key) || "unset"); } catch { setChoice("unset"); }
   }, []);
   useEffect(() => {
-    window[`ga-disable-${id}`] = choice !== "accepted" || !publicPage;
-    if (choice !== "accepted" || !publicPage || !["guestsetgo.com", "www.guestsetgo.com"].includes(location.hostname)) return;
-    window.dataLayer = window.dataLayer || [];
-    window.gtag = window.gtag || function () { window.dataLayer.push(arguments); };
-    if (!document.getElementById("guestsetgo-ga")) {
-      window.gtag("js", new Date());
-      const script = document.createElement("script");
-      script.id = "guestsetgo-ga";
-      script.async = true;
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${id}`;
-      document.head.appendChild(script);
-    }
-    window.gtag("config", id, { send_page_view: false, allow_google_signals: false, allow_ad_personalization_signals: false, page_location: location.origin + pathname, page_referrer: "" });
-    window.gtag("event", "page_view", { page_location: location.origin + pathname, page_title: document.title, page_referrer: "" });
-  }, [choice, pathname, publicPage]);
+    window[`ga-disable-${id}`] = choice !== "accepted";
+    if (choice !== "accepted") return;
+    const frame = requestAnimationFrame(() => sendPublicPageView(pathname));
+    return () => cancelAnimationFrame(frame);
+  }, [choice, pathname]);
   function choose(value) {
     window[`ga-disable-${id}`] = value !== "accepted";
     try { localStorage.setItem(key, value); } catch {}

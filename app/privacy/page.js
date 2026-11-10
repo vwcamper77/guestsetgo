@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { documentFor, publicPageMetadata } from "@/lib/seo.mjs";
 
-export const metadata = { title: "Privacy policy" };
+export const metadata = publicPageMetadata(documentFor("/privacy"));
 
 export default function Privacy() {
   const updated = "1 November 2026";
@@ -37,6 +38,7 @@ export default function Privacy() {
 
       <h2>Contact</h2>
       <p>Questions about this policy: hello@guestsetgo.com.</p>
+      <p>Public pages: <Link href="/">home</Link>, <Link href="/blog">hosting journal</Link>, <Link href="/blog/diy-holiday-let-welcome-book">holiday let welcome book</Link>, <Link href="/vs">comparisons</Link>, <Link href="/about">about</Link> and <Link href="/terms">terms</Link>.</p>
     </div>
   );
 }

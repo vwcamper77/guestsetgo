@@ -1,6 +1,7 @@
 import Link from "next/link";
+import { documentFor, publicPageMetadata } from "@/lib/seo.mjs";
 
-export const metadata = { title: "Terms of service" };
+export const metadata = publicPageMetadata(documentFor("/terms"));
 
 export default function Terms() {
   const updated = "16 October 2026";
@@ -40,6 +41,7 @@ export default function Terms() {
 
       <h2>Contact</h2>
       <p>Questions about these terms: hello@guestsetgo.com.</p>
+      <p>Public pages: <Link href="/">home</Link>, <Link href="/blog">hosting journal</Link>, <Link href="/blog/convert-welcome-folder-to-digital-guide">welcome folder conversion</Link>, <Link href="/vs">comparisons</Link>, <Link href="/about">about</Link> and <Link href="/privacy">privacy</Link>.</p>
     </div>
   );
 }
