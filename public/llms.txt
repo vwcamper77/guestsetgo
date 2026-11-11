@@ -1,0 +1,28 @@
+# GuestSetGo
+
+> GuestSetGo gives holiday home guests a guided walkthrough of the property, with photo instructions for heating, Wi-Fi, appliances and check-out shared by one QR code or link.
+
+## Home
+
+- [Home](https://www.guestsetgo.com): An overview of GuestSetGo and its digital guest guides.
+
+## Pricing
+
+- [Pricing](https://www.guestsetgo.com): See the pricing section on the homepage for guest-guide hosting plans.
+
+## How it works
+
+- [How it works](https://www.guestsetgo.com): The homepage explains how to create a property guide, share a QR code or link, and guide guests through their stay.
+
+## Blog
+
+- [Blog](https://www.guestsetgo.com/blog): Practical articles for holiday-home hosts.
+
+## Templates
+
+- [Sample guest guide](https://www.guestsetgo.com/sample): Explore a fictional property's guide as an example for your own.
+- [DIY holiday let welcome book](https://www.guestsetgo.com/blog/diy-holiday-let-welcome-book): Guidance on structuring and writing your own welcome book.
+
+## Contact
+
+- [Contact](https://www.guestsetgo.com): Find the contact email in the homepage footer.
