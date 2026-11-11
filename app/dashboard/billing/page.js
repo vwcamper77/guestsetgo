@@ -6,6 +6,8 @@ import { useAuth } from "@/components/AuthProvider";
 import { useCurrency } from "@/components/CurrencyProvider";
 import { localisePrices, money, priceBook } from "@/lib/currency.mjs";
 import { PLANS, ASSISTED } from "@/lib/plans";
+import { beginCheckoutEvent } from "@/lib/analytics-events.mjs";
+import { trackEvent } from "@/components/google-analytics-client";
 
 const date = (iso) => iso ? new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "";
 function Billing() {
@@ -32,7 +34,12 @@ function Billing() {
   }, [params, load]);
   async function go(plan) {
     setBusy(plan); setError("");
-    try { const d = await api("/api/stripe/checkout", { method: "POST", body: { plan, quantity: qty[plan] || 1, interval: plan === "host" ? interval : "month", propertyId, currency } }); window.location.href = d.url; }
+    try {
+      const selectedInterval = plan === "host" ? interval : "month";
+      const d = await api("/api/stripe/checkout", { method: "POST", body: { plan, quantity: qty[plan] || 1, interval: selectedInterval, propertyId, currency } });
+      trackEvent("begin_checkout", beginCheckoutEvent({ plan, quantity: plan === "assisted" ? 1 : qty[plan] || 1, interval: selectedInterval, currency }));
+      window.location.href = d.url;
+    }
     catch (e) { setError(e.message); setBusy(""); }
   }
   async function portal() {

@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { comparisons } from '@/lib/editorial.mjs';
+import { comparisons, wordCount } from '@/lib/editorial.mjs';
 import { EditorialShell, Breadcrumbs, Contents, Sections, GuideCTA, JsonLd } from '@/components/Editorial';
+import { articleStructuredData, publicPageMetadata } from '@/lib/seo.mjs';
 
 export const dynamicParams = false;
 export function generateStaticParams() { return comparisons.map(c => ({ competitor: c.slug })); }
 export function generateMetadata({ params }) {
   const c = comparisons.find(c => c.slug === params.competitor);
   if (!c) return {};
-  return { title: `GuestSetGo vs ${c.name}: holiday let guide comparison`, description: c.description, alternates: { canonical: `/vs/${c.slug}` }, openGraph: { title: `GuestSetGo vs ${c.name}`, description: c.description, url: `/vs/${c.slug}`, type: 'article' } };
+  return publicPageMetadata({ path: `/vs/${c.slug}`, title: `GuestSetGo vs ${c.name}: holiday let guide comparison`, description: c.description, openGraphTitle: `GuestSetGo vs ${c.name}`, type: 'article', publishedTime: '2026-10-16' });
 }
 
 export default function Comparison({ params }) {
@@ -19,6 +20,6 @@ export default function Comparison({ params }) {
   <div className="editorial-table-scroll" role="region" aria-label={`GuestSetGo and ${c.name} comparison`} tabIndex={0}><table className="editorial-table"><caption>Different options, different jobs</caption><thead><tr><th scope="col">Consideration</th><th scope="col">{c.name}</th><th scope="col">GuestSetGo</th></tr></thead><tbody><tr><th scope="row">Proposition</th><td>{c.proposition}</td><td>Photo-led browser guides with numbered instructions, local recommendations and checkout tasks.</td></tr><tr><th scope="row">Price context</th><td>{c.pricing}</td><td>Host: £6/property/month or £60/year. Conversion: £79 separately.</td></tr><tr><th scope="row">Consider it for</th><td>{c.best}</td><td>Independent hosts wanting a focused guide and optional folder preparation help.</td></tr></tbody></table></div>
   <div className="editorial-reading"><Contents sections={sections} /><article className="editorial-prose"><Sections sections={sections} /><section className="editorial-section" id="sources"><h2>Sources and comparison method</h2><p>This comparison is published by GuestSetGo, a commercial alternative. It combines provider documentation with our own product scope and practical evaluation advice. It is not a claim that either product performs better in a controlled test. Prices and capabilities may change.</p>{c.source ? <p><a href={c.source}>{c.name}: official {c.slug === 'duve' ? 'guest app documentation' : c.slug === 'airbnb-house-manual' ? 'house manual documentation' : 'pricing and product information'}</a>{c.extra && <> · <a href={c.extra}>Product overview</a></>}</p> : <p>The DIY comparison describes common document workflows rather than a specific vendor package. Printing costs and editing time depend on your own setup.</p>}</section>
   <section className="editorial-section"><h2>Before you choose</h2><p>GuestSetGo is not presented here as a replacement for a property management system, team operations platform, guest AI concierge or every translation workflow. Confirm your requirements against a current demonstration and the provider’s quote.</p><p>See <Link href="/#pricing">GuestSetGo pricing</Link>, <Link href="/blog/diy-holiday-let-welcome-book">build your own guide</Link> or <Link href="/blog/convert-welcome-folder-to-digital-guide">explore folder conversion</Link>.</p></section></article></div>
-  <GuideCTA /><section className="editorial-section"><h2>Continue comparing</h2><div className="editorial-related">{comparisons.filter(x => x.slug !== c.slug).map(x => <Link key={x.slug} href={`/vs/${x.slug}`}>vs {x.name} →</Link>)}</div></section></div><JsonLd value={{ '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [{ '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.guestsetgo.com' }, { '@type': 'ListItem', position: 2, name: 'Compare', item: 'https://www.guestsetgo.com/vs' }, { '@type': 'ListItem', position: 3, name: c.name, item: `https://www.guestsetgo.com/vs/${c.slug}` }] }} /></EditorialShell>;
+  <GuideCTA /><section className="editorial-section"><h2>Continue comparing</h2><div className="editorial-related">{comparisons.filter(x => x.slug !== c.slug).map(x => <Link key={x.slug} href={`/vs/${x.slug}`}>vs {x.name} →</Link>)}</div></section></div><JsonLd value={articleStructuredData({ headline: `GuestSetGo vs ${c.name}`, description: c.description, path: `/vs/${c.slug}`, wordCount: wordCount(sections), breadcrumbs: [['Home', '/'], ['Compare', '/vs'], [c.name, `/vs/${c.slug}`]] })} /></EditorialShell>;
 }
 

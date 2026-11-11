@@ -1,6 +1,8 @@
 import { EditorialShell } from '@/components/Editorial';
+import { documentFor, publicPageMetadata } from '@/lib/seo.mjs';
 import { publicSiteUrl } from '@/lib/site-url.mjs';
-export const metadata = { title: 'Instagram & Facebook sharing kit', alternates: { canonical: '/sharing' } };
+
+export const metadata = publicPageMetadata(documentFor('/sharing'));
 export default function Sharing() {
   const url = `${publicSiteUrl()}/#guest-checklist`;
   const caption = `A thoughtful welcome starts before your guests arrive. Our free “Impress your guests” checklist covers clear arrival instructions, personal touches, honest review requests and reasons to return. Get the printable PDF: ${url}`;

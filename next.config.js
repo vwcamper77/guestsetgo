@@ -1,7 +1,12 @@
+const { publicRedirects } = require("./lib/public-redirects");
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
   env: { NEXT_PUBLIC_RELEASE_ID: process.env.VERCEL_URL || "local" },
+  async redirects() {
+    return publicRedirects();
+  },
   async rewrites() {
     // Keep Firebase's sign-in helpers on our domain, including OAuth callbacks.
     const firebaseHost = `${process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "guestsetgo-123"}.firebaseapp.com`;

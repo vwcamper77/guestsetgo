@@ -4,9 +4,11 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   createUserWithEmailAndPassword, signInWithEmailAndPassword, GoogleAuthProvider,
-  signInWithPopup, sendPasswordResetEmail, updateProfile,
+  signInWithPopup, sendPasswordResetEmail, updateProfile, getAdditionalUserInfo,
 } from "firebase/auth";
 import { clientAuth } from "@/lib/firebase-client";
+import { signUpEvent } from "@/lib/analytics-events.mjs";
+import { trackEvent } from "./google-analytics-client";
 import { useAuth } from "./AuthProvider";
 
 const MESSAGES = {
@@ -57,6 +59,7 @@ export default function AuthForm({ mode }) {
     try {
       if (signup) {
         const cred = await createUserWithEmailAndPassword(clientAuth(), email.trim(), password);
+        trackEvent("sign_up", signUpEvent("email"));
         if (name.trim()) await updateProfile(cred.user, { displayName: name.trim() });
       } else {
         await signInWithEmailAndPassword(clientAuth(), email.trim(), password);
@@ -66,7 +69,10 @@ export default function AuthForm({ mode }) {
 
   async function google() {
     setError(""); setInfo(""); setBusy(true);
-    try { await signInWithPopup(clientAuth(), new GoogleAuthProvider()); } catch (err) { fail(err); }
+    try {
+      const result = await signInWithPopup(clientAuth(), new GoogleAuthProvider());
+      if (getAdditionalUserInfo(result)?.isNewUser) trackEvent("sign_up", signUpEvent("google"));
+    } catch (err) { fail(err); }
   }
 
   async function reset() {

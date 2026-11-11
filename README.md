@@ -8,7 +8,7 @@ Digital guest guidebooks for holiday lets. Hosts sign up, build a guidebook from
 
 | Area | Path | What it does |
 | --- | --- | --- |
-| Landing page | `/` | Marketing page, pricing, sign-up links. Static sample at `/demo.html`. |
+| Landing page | `/` | Marketing page, pricing, sign-up links. Sample guest guide at `/sample`. |
 | Sign in / sign up | `/login`, `/signup` | Email and password, or Google. Password reset. |
 | Host dashboard | `/dashboard` | List and create guidebooks, see what's live against the plan. |
 | Guidebook editor | `/dashboard/properties/[id]` | Every section, photo uploads with numbered dots, local picks with Google Maps walking routes, check-out tasks, QR code and door sign downloads, check-outs and ratings from guests. Live phone preview. |

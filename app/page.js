@@ -2,17 +2,18 @@ import Link from "next/link";
 import QRCode from "qrcode";
 import { CurrencySelect } from "@/components/CurrencyProvider";
 import { LandingPricing, PricingFaqs } from "@/components/LocalizedPricing";
-import { EditorialFooter } from "@/components/Editorial";
+import { EditorialFooter, JsonLd } from "@/components/Editorial";
 import HomePreview from "@/components/HomePreview";
+import { documentFor, homeStructuredData, publicPageMetadata } from "@/lib/seo.mjs";
+import { linkOrigin } from "@/lib/site-url.mjs";
 import "./home.css";
 
-const description = "Give guests a guided walkthrough of your holiday home. Share photo instructions for heating, Wi-Fi, appliances and check-out with one simple QR code or link.";
+const homeDocument = documentFor("/");
+const homeMetadata = publicPageMetadata(homeDocument);
 export const metadata = {
-  title: { absolute: "GuestSetGo | Guided walkthroughs for holiday homes" },
-  description,
-  alternates: { canonical: "/" },
-  openGraph: { title: "Give every guest a guided walkthrough of your holiday home.", description, url: "/", images: [{ url: "/opengraph-image?v=phone-logo-2", width: 1200, height: 630, alt: "GuestSetGo logo and a phone displaying a holiday cottage guest guide" }] },
-  twitter: { card: "summary_large_image", title: "GuestSetGo | Guided walkthroughs for holiday homes", description, images: ["/opengraph-image?v=phone-logo-2"] },
+  ...homeMetadata,
+  openGraph: { ...homeMetadata.openGraph, images: [{ url: "/opengraph-image?v=phone-logo-2", width: 1200, height: 630, alt: "GuestSetGo logo and a phone displaying a holiday cottage guest guide" }] },
+  twitter: { ...homeMetadata.twitter, title: homeDocument.title, images: ["/opengraph-image?v=phone-logo-2"] },
 };
 
 const FEATURES = [
@@ -36,16 +37,16 @@ const FAQS = [
 ];
 
 export default async function Home() {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://guestsetgo.com";
-  const sampleUrl = new URL("/sample", siteUrl).toString();
+  const sampleUrl = new URL("/sample", linkOrigin()).toString();
   const qrDataUrl = await QRCode.toDataURL(sampleUrl, { width: 280, margin: 4, color: { dark: "#10233a", light: "#ffffff" } });
   return (
     <>
+      <JsonLd value={homeStructuredData(FAQS)} />
       <div className="home-page">
       <a className="home-skip" href="#main-content">Skip to content</a>
       <div className="wrap"><nav className="site-nav home-nav" aria-label="Main navigation">
         <Link className="logo brand-logo" href="/" aria-label="GuestSetGo home"><img src="/brand/guestsetgo-logo.png" alt="GuestSetGo" width={2172} height={724} /></Link>
-        <div className="home-nav-sections"><a href="#how-it-works">How it works</a><a href="#example-guide">Example guide</a><a href="#benefits">Benefits</a><a href="#pricing">Pricing</a><a href="#faq">FAQs</a></div>
+        <div className="home-nav-sections"><a href="#how-it-works">How it works</a><a href="#example-guide">Example guide</a><a href="#benefits">Benefits</a><a href="#pricing">Pricing</a><a href="#faq">FAQs</a><Link href="/blog">Journal</Link><Link href="/vs">Compare</Link></div>
         <div className="home-nav-actions"><Link className="btn" href="/login">Log in</Link><Link className="btn solid" href="/signup">Create your guide</Link></div>
       </nav></div>
       <main id="main-content">
@@ -94,6 +95,7 @@ export default async function Home() {
           <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
             <PricingFaqs faqs={FAQS} />
           </div>
+          <p className="small">More for hosts: <Link href="/blog/diy-holiday-let-welcome-book">make a holiday let welcome book</Link>, <Link href="/blog/convert-welcome-folder-to-digital-guide">convert a welcome folder</Link>, or <Link href="/vs">compare guest guide options</Link>.</p>
         </div>
       </section>
 
