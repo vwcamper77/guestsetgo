@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { checkoutSelection, stripeCurrency, assertCheckoutPrice, portalConfiguration, planForConfiguredPrice } from "../lib/billing.mjs";
 import { localisePrices, priceBook, money } from "../lib/currency.mjs";
+import { checkoutClientId, sendStripePurchase } from "../lib/ga4-purchase.mjs";
 
 const env = {};
 for (const suffix of ["", "_USD"]) {
@@ -10,6 +11,7 @@ for (const suffix of ["", "_USD"]) {
   for (const key of ["HOST", "AGENCY"]) env[`STRIPE_PORTAL_${key}${suffix}`] = `bpc_${key}${suffix}`;
 }
 async function load(path, dependencies) {
+  dependencies = { checkoutClientId, sendStripePurchase: (event) => sendStripePurchase(event, { env: {} }), ...dependencies };
   const source = (await readFile(new URL(path, import.meta.url), "utf8")).replace(/^import .*;\r?$/gm, "");
   const key = `currency_test_${Math.random().toString(36).slice(2)}`;
   globalThis[key] = dependencies;

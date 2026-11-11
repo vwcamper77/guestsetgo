@@ -67,6 +67,36 @@ A guidebook can only be put live if the host's plan has room. If a subscription 
 2. Add every variable from `.env.example` under **Settings > Environment Variables**. Set `NEXT_PUBLIC_SITE_URL=https://guestsetgo.com` and `ADMIN_EMAILS` to your email.
 3. Deploy. Then **Settings > Domains**, add `guestsetgo.com` and `www.guestsetgo.com`, and set the DNS records Vercel shows you in GoDaddy (an `A` record for the root and a `CNAME` for `www`).
 
+### Server-side GA4 purchases (optional)
+
+In Vercel **Settings > Environment Variables**, set `GA4_MEASUREMENT_ID` to the
+measurement ID of the same GA4 web stream used by the site, and `GA4_API_SECRET`
+to a secret created in GA4 **Admin > Data streams > your web stream > Measurement
+Protocol API secrets**. Both are server-only variables: do not use `NEXT_PUBLIC_`
+or commit their values. Set production values only in Production; use a separate
+test stream for Preview/Development or leave both unset to disable sending there.
+Apply them through the next Git-triggered deployment (see `AGENTS.md`).
+
+The signed Stripe webhook sends `purchase` after paid Checkout completion (also
+covering asynchronous payment success), and on `invoice.paid` with
+`billing_reason=subscription_cycle` for renewals. Initial subscription invoices
+are excluded because Checkout reports that payment. Values use Checkout's paid
+`amount_total` or the renewal invoice's `amount_paid`, divided by 100, with the
+Stripe currency and session/invoice ID as `transaction_id`. Zero-value payments,
+including 100% discounts, are skipped.
+
+Checkout saves the `_ga` cookie's client ID as `ga_client_id` metadata on both
+the session and subscription. Without a usable cookie it saves a random ID.
+Older objects without this metadata get a random fallback stored in the
+server-only `analyticsPurchases/{transactionId}` Firestore document, keeping
+the client/transaction pair stable for retries. No email or account ID is sent.
+GA4 requests are awaited with a three-second HTTP timeout; delivery failures
+are logged without secrets and do not fail billing. Delivery is best-effort,
+with no separate analytics retry queue. Missing either variable disables sends.
+
+Reference: [GA4 Measurement Protocol](https://developers.google.com/analytics/devguides/collection/protocol/ga4)
+and [Stripe metadata propagation](https://docs.stripe.com/metadata).
+
 ### 4. First run
 
 1. Sign up at `/signup` with the email in `ADMIN_EMAILS`. You'll see **Admin** in the top bar.

@@ -4,6 +4,8 @@ import { db } from "@/lib/firebase-admin";
 import { stripe, planForPrice } from "@/lib/stripe";
 import { allowance } from "@/lib/plans";
 import { subscriptionPeriodEnd, subscriptionWillCancel, invoiceSubscription } from "@/lib/billing.mjs";
+import { sendStripePurchase } from "@/lib/ga4-purchase.mjs";
+import { randomUUID } from "node:crypto";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -123,5 +125,15 @@ export async function POST(req) {
     console.error("Webhook handling failed", event.type, err);
     return NextResponse.json({ error: "Handler failed" }, { status: 500 });
   }
+  await sendStripePurchase(event, { getFallbackClientId: async (transactionId) => {
+    const ref = db().collection("analyticsPurchases").doc(transactionId);
+    return db().runTransaction(async (transaction) => {
+      const existing = (await transaction.get(ref)).data()?.clientId;
+      if (existing) return existing;
+      const clientId = randomUUID();
+      transaction.set(ref, { clientId });
+      return clientId;
+    });
+  } });
   return NextResponse.json({ received: true });
 }
