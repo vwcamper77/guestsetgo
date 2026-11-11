@@ -3,6 +3,7 @@ import { handle, ok, requireUser, requireProperty, HttpError } from "@/lib/auth-
 import { stripe } from "@/lib/stripe";
 import { checkoutSelection, stripeCurrency, assertCheckoutPrice } from "@/lib/billing.mjs";
 import { randomBytes } from "node:crypto";
+import { checkoutClientId } from "@/lib/ga4-purchase.mjs";
 
 export const dynamic = "force-dynamic";
 
@@ -40,7 +41,7 @@ export const POST = handle(async (req) => {
   try { assertCheckoutPrice(choice, configuredPrice); }
   catch (e) { throw new HttpError(503, e.message); }
   const base = process.env.VERCEL_ENV === "preview" ? new URL(req.url).origin : process.env.NEXT_PUBLIC_SITE_URL || new URL(req.url).origin;
-  const metadata = { uid: user.uid, plan, quantity: String(quantity), interval, propertyId, currency };
+  const metadata = { uid: user.uid, plan, quantity: String(quantity), interval, propertyId, currency, ga_client_id: checkoutClientId(req.headers.get("cookie") || "") };
   const destination = propertyId ? `/dashboard/properties/${encodeURIComponent(propertyId)}/folder-conversion?checkout=success` : "/dashboard/billing?checkout=success";
   const session = await stripe().checkout.sessions.create({
     integration_identifier: `guestsetgo-${plan}-${Array.from(randomBytes(8), (n) => String.fromCharCode(97 + n % 26)).join("")}`,

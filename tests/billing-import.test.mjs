@@ -4,10 +4,11 @@ import { readFile } from "node:fs/promises";
 import { checkoutSelection, stripeCurrency, assertCheckoutPrice, subscriptionPeriodEnd, subscriptionWillCancel, invoiceSubscription } from "../lib/billing.mjs";
 import { validateImages, importableFields, mergeImport, IMPORT_PROMPT } from "../lib/manual-import.mjs";
 import { arrivalValidation } from "../lib/arrival.mjs";
+import { checkoutClientId, sendStripePurchase } from "../lib/ga4-purchase.mjs";
 
 const env = { STRIPE_PRICE_HOST_MONTHLY: "price_host", STRIPE_PRICE_HOST_ANNUAL: "price_annual", STRIPE_PRICE_AGENCY_MONTHLY: "price_agency", STRIPE_PRICE_ASSISTED: "price_assisted" };
 async function moduleFromFile(path, dependencies = {}) {
-  dependencies = { arrivalValidation, ...dependencies };
+  dependencies = { arrivalValidation, checkoutClientId, sendStripePurchase: (event) => sendStripePurchase(event, { env: {} }), ...dependencies };
   const key = `test_${Math.random().toString(36).slice(2)}`;
   globalThis[key] = dependencies;
   const source = (await readFile(new URL(path, import.meta.url), "utf8")).replace(/^import .*;\r?$/gm, "");
@@ -79,11 +80,13 @@ test("actual checkout handler does not attach a setup fee or accept legacy coupo
       requireProperty: async () => ({ data: { ownerUid: "host1" } }), HttpError, checkoutSelection, stripeCurrency, assertCheckoutPrice,
       randomBytes: () => Buffer.alloc(8), stripe: () => ({ customers: { retrieve: async () => ({ currency: "gbp" }) }, prices: { retrieve: async (id) => ({ active: true, currency: "gbp", unit_amount: id === "price_assisted" ? 7900 : id === "price_annual" ? 6000 : 600, recurring: id === "price_assisted" ? null : { interval: id === "price_annual" ? "year" : "month", interval_count: 1 } }) }, checkout: { sessions: { create: async (params) => { captured = params; return { url: "https://checkout.stripe.com/test" }; } } } }),
     });
-    const request = (body) => new Request("http://localhost/api/stripe/checkout", { method: "POST", body: JSON.stringify(body) });
+    const request = (body) => new Request("http://localhost/api/stripe/checkout", { method: "POST", headers: { cookie: "_ga=GA1.1.12345.67890" }, body: JSON.stringify(body) });
     await route.POST(request({ plan: "host", interval: "year", quantity: 2 }));
     assert.deepEqual(captured.line_items, [{ price: "price_annual", quantity: 2 }]);
     assert.equal(captured.allow_promotion_codes, undefined);
     assert.equal(captured.subscription_data.metadata.interval, "year");
+    assert.equal(captured.metadata.ga_client_id, "12345.67890");
+    assert.equal(captured.subscription_data.metadata.ga_client_id, "12345.67890");
     await route.POST(request({ plan: "assisted", propertyId: "property1" }));
     assert.equal(captured.mode, "payment");
     assert.equal(captured.metadata.propertyId, "property1");
