@@ -1,8 +1,8 @@
-import { absolutePublicUrl, indexablePaths } from '@/lib/seo.mjs';
+import { absolutePublicUrl, indexablePaths, sitemapLastModified } from '@/lib/seo.mjs';
 
 export default function sitemap() {
-  return indexablePaths().map((path) => ({
-    url: absolutePublicUrl(path),
-    ...(path.startsWith('/vs') || path.startsWith('/blog') || path === '/about' ? { lastModified: '2026-10-16' } : {}),
-  }));
+  return indexablePaths().map((path) => {
+    const lastModified = sitemapLastModified(path);
+    return { url: absolutePublicUrl(path), ...(lastModified ? { lastModified } : {}) };
+  });
 }

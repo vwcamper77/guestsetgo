@@ -95,7 +95,7 @@ export default async function Home() {
           <div style={{ display: "grid", gap: 10, maxWidth: 720 }}>
             <PricingFaqs faqs={FAQS} />
           </div>
-          <p className="small">More for hosts: <Link href="/blog/diy-holiday-let-welcome-book">make a holiday let welcome book</Link>, <Link href="/blog/convert-welcome-folder-to-digital-guide">convert a welcome folder</Link>, or <Link href="/vs">compare guest guide options</Link>.</p>
+          <p className="small">More for hosts: <Link href="/blog/diy-holiday-let-welcome-book">make a holiday let welcome book</Link>, <Link href="/blog/holiday-let-information-pack-template">use an information pack template</Link>, <Link href="/blog/convert-welcome-folder-to-digital-guide">convert a welcome folder</Link>, or <Link href="/vs">compare guest guide options</Link>.</p>
         </div>
       </section>
 

@@ -7,7 +7,7 @@ for (const format of ['instagram', 'facebook']) {
   writeFileSync(`output/${format}-share.png`, bytes);
   console.log(format, response.status, bytes.readUInt32BE(16), bytes.readUInt32BE(20));
 }
-for (const route of ['/', '/blog/diy-holiday-let-welcome-book', '/blog/convert-welcome-folder-to-digital-guide']) {
+for (const route of ['/', '/blog/diy-holiday-let-welcome-book', '/blog/convert-welcome-folder-to-digital-guide', '/blog/holiday-let-information-pack-template']) {
   const response = await fetch(`${base}${route}`);
   const html = await response.text();
   if (!response.ok || !html.includes('property="og:image"') || !html.includes('Get my free checklist')) throw new Error(`${route}: missing metadata or form`);
