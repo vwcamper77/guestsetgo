@@ -3,7 +3,8 @@ import assert from "node:assert/strict";
 import { createRequire } from "node:module";
 import { priceBook } from "../lib/currency.mjs";
 import { linkOrigin, publicSiteUrl } from "../lib/site-url.mjs";
-import { absolutePublicUrl, articleStructuredData, homeStructuredData, indexablePaths, publicDocuments, publicPageMetadata, robotsAllows } from "../lib/seo.mjs";
+import { absolutePublicUrl, articleStructuredData, homeStructuredData, indexablePaths, publicDocuments, publicPageMetadata, robotsAllows, sitemapLastModified } from "../lib/seo.mjs";
+import { articleWordCount, articles, wordCount } from "../lib/editorial.mjs";
 import { beginCheckoutEvent, isPublicAnalyticsPath, pageViewParams, signUpEvent } from "../lib/analytics-events.mjs";
 
 const require = createRequire(import.meta.url);
@@ -22,6 +23,7 @@ test("canonical host, sitemap URLs and public pages agree on www", () => {
   for (const url of urls) assert.equal(url.startsWith("https://www.guestsetgo.com"), true);
   assert.ok(urls.includes("https://www.guestsetgo.com/sample"));
   assert.ok(urls.includes("https://www.guestsetgo.com/blog/diy-holiday-let-welcome-book"));
+  assert.ok(urls.includes("https://www.guestsetgo.com/blog/holiday-let-information-pack-template"));
   assert.equal(urls.some((url) => url.includes("dashboard") || url.includes("/login") || url.includes("/g/")), false);
 });
 
@@ -38,6 +40,19 @@ test("every indexable page has a unique title and description and stays crawlabl
   for (const path of ["/dashboard", "/dashboard/billing", "/admin", "/login", "/signup", "/g/private", "/api/me"]) assert.equal(robotsAllows(path), false);
   assert.equal(publicPageMetadata(docs.find((doc) => doc.path === "/vs")).openGraph.images[0], "/opengraph-image");
   assert.equal(publicPageMetadata({ path: "/blog/diy-holiday-let-welcome-book", title: "Guide", description: "A practical guide for hosts writing their own welcome book.", image: false }).openGraph.images, undefined);
+  const pack = docs.find((doc) => doc.path === "/blog/holiday-let-information-pack-template");
+  assert.equal(pack.publishedTime, "2026-11-16");
+  assert.equal(pack.image.url, "/editorial/holiday-let-information-pack-template.jpg");
+  assert.equal(pack.image.type, "image/jpeg");
+  assert.equal(publicPageMetadata(pack).alternates.canonical, "/blog/holiday-let-information-pack-template");
+  assert.equal(publicPageMetadata(pack).openGraph.images[0].url, "/editorial/holiday-let-information-pack-template.jpg");
+  assert.equal(docs.find((doc) => doc.path === "/blog/diy-holiday-let-welcome-book").publishedTime, "2026-10-16");
+  assert.equal(docs.find((doc) => doc.path === "/blog/diy-holiday-let-welcome-book").image, false);
+  assert.equal(sitemapLastModified("/blog/holiday-let-information-pack-template"), "2026-11-16");
+  assert.equal(sitemapLastModified("/blog/diy-holiday-let-welcome-book"), "2026-10-16");
+  assert.equal(sitemapLastModified("/blog"), "2026-11-16");
+  assert.equal(sitemapLastModified("/vs/touch-stay"), "2026-10-16");
+  for (const article of articles.filter((item) => !item.published)) assert.equal(articleWordCount(article), wordCount(article.sections));
 });
 
 test("structured data uses listed GBP prices and does not invent reviews", () => {
