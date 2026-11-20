@@ -5,7 +5,7 @@ import { articleBodyLines, articleLinks, articles } from "../lib/editorial.mjs";
 import { articleStructuredData } from "../lib/seo.mjs";
 
 function approvedLines(markdown) {
-  const body = markdown.replace(/^---[\s\S]*?---\n/, "");
+  const body = markdown.replaceAll("\r\n", "\n").replace(/^---[\s\S]*?---\n/, "");
   const lines = [];
   for (const raw of body.split("\n")) {
     const line = raw.trim();
