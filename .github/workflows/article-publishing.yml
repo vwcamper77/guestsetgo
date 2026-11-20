@@ -1,0 +1,36 @@
+name: Article publishing
+on:
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: Verify privately, or process explicitly approved publication jobs
+        type: choice
+        options: [verify, run]
+        default: verify
+  schedule:
+    - cron: '*/15 * * * *'
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  id-token: write
+concurrency:
+  group: smr-article-publication
+  cancel-in-progress: false
+jobs:
+  publish:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020
+        with:
+          node-version: '24.12.0'
+      - name: Verify or release approved articles through GitHub
+        env:
+          ARTICLE_SITE: guestsetgo
+          WORKER_MODE: ${{ inputs.mode || 'run' }}
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/smr-article/worker.mjs "$WORKER_MODE"
