@@ -50,7 +50,8 @@ test("every indexable page has a unique title and description and stays crawlabl
   assert.equal(docs.find((doc) => doc.path === "/blog/diy-holiday-let-welcome-book").image, false);
   assert.equal(sitemapLastModified("/blog/holiday-let-information-pack-template"), "2026-11-16");
   assert.equal(sitemapLastModified("/blog/diy-holiday-let-welcome-book"), "2026-10-16");
-  assert.equal(sitemapLastModified("/blog"), "2026-11-16");
+  const latestArticleDate = docs.filter((doc) => doc.path.startsWith("/blog/")).map((doc) => doc.publishedTime).sort().at(-1);
+  assert.equal(sitemapLastModified("/blog"), latestArticleDate);
   assert.equal(sitemapLastModified("/vs/touch-stay"), "2026-10-16");
   for (const article of articles.filter((item) => !item.published)) assert.equal(articleWordCount(article), wordCount(article.sections));
 });
